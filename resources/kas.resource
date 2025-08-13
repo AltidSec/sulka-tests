@@ -1,8 +1,20 @@
 *** Settings ***
 Documentation    Keywords for building with kas
 Library          Process
+Library          OperatingSystem
 
 *** Keywords ***
+Add Sulka Configuration
+    [Arguments]    ${configuration}
+    Append To File    ${TEMP_DIR}/kas-sulka-configuration.yml    \ \ \ \ ${configuration}\n
+
+Reset Sulka Configuration
+    Run Process    git    checkout    kas-sulka-configuration.yml    cwd=${TEMP_DIR}
+
+Enable Sudo
+    Append To File    ${TEMP_DIR}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    Defaults:serviceuser secure_path="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin", timestamp_timeout=0\n
+    Append To File    ${TEMP_DIR}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    serviceuser ALL=(ALL:ALL) ALL\n
+
 Build Sulka Image
     [Arguments]    ${configuration}
     Log    Starting build...
