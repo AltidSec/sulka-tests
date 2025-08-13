@@ -25,5 +25,11 @@ Build Sulka Image
 
 Launch Image With QEMU
     [Arguments]    ${configuration}
-    ${result}=    Run Process    kas    shell    ${configuration}    -c    "runqemu nographic"    cwd=${TEMP_DIR}
-    Sleep    60s
+    ${handle}=    Start Process    kas    shell    ${configuration}    -c    runqemu nographic slirp    cwd=${TEMP_DIR}    stdout=kas_stdout.log    stderr=kas_stderr.log
+    Sleep    80s
+    RETURN    ${handle}
+
+Stop QEMU
+    [Arguments]    ${handle}
+    Terminate Process    ${handle}
+    Wait For Process    ${handle}    timeout=10s
