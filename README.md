@@ -7,5 +7,6 @@ To run the tests, do the following:
 python3 -m venv venv
 source venv/bin/activate
 pip install -r ./requirements.txt
+./prepare_tests.sh
 robot --argumentfile arguments.robot tests
 ```
