@@ -10,8 +10,7 @@ Test Sulka Build
     [Documentation]    Clone git repo and run kas build
     [Tags]             bitbake    build
 
-    Remove Directory    ${TEMP_DIR}    recursive=True
-    Create Directory    ${TEMP_DIR}
+    Remove Directory    ${TEMP_DIR}/build    recursive=True
 
     Build Sulka Image    kas-sulka.yml
 
@@ -19,7 +18,6 @@ Test Full Sulka Build
     [Documentation]    Clone git repo and run kas build
     [Tags]             bitbake    build
 
-    Remove Directory    ${TEMP_DIR}    recursive=True
-    Create Directory    ${TEMP_DIR}
+    Remove Directory    ${TEMP_DIR}/build    recursive=True
 
     Build Sulka Image    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
