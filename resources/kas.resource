@@ -23,6 +23,10 @@ Build Sulka Image
     Should Be Equal As Integers    ${result.rc}    0    Build failed
     RETURN    ${result}
 
+Reset Sulka Image
+    [Arguments]    ${configuration}
+    ${result}=    Run Process    kas    shell    ${configuration}    -c    bitbake -c cleanall core-image-base    cwd=${TEMP_DIR}    timeout=5m    stdout=kas_stdout.log    stderr=kas_stderr.log
+
 Launch Image With QEMU
     [Arguments]    ${configuration}
     ${handle}=    Start Process    kas    shell    ${configuration}    -c    runqemu nographic slirp    cwd=${TEMP_DIR}    stdout=kas_stdout.log    stderr=kas_stderr.log
