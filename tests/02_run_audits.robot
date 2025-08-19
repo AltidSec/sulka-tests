@@ -9,6 +9,7 @@ Suite Setup      Run Keywords
 ...    AND    Add Sulka Configuration    SULKA_SSH_KEYS_DIR="${CURDIR}/../auth-keys/"
 ...    AND    Add Sulka Configuration    SULKA_EXTRA_COMPLIANCY="1"
 ...    AND    Enable Sudo
+...    AND    Reset Sulka Image    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
 ...    AND    Build Sulka Image    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
 ...    AND    Prepare QEMU For Audit
 Suite Teardown    Reset Sulka Configuration
@@ -33,7 +34,7 @@ Run Lynis Scan
 
     Should Contain    ${output}    Suggestions (17):
 
-    Stop QEMU    ${handle}
+    [Teardown]    Stop QEMU    ${handle}
 
 Run OSCAP Scan
     [Documentation]    Run OSCAP Scan On QEMU
@@ -55,7 +56,7 @@ Run OSCAP Scan
 
     Should Contain X Times    ${output}    fail    2
 
-    Stop QEMU    ${handle}
+    [Teardown]    Stop QEMU    ${handle}
 
 *** Keywords ***
 Prepare QEMU For Audit
@@ -73,4 +74,4 @@ Prepare QEMU For Audit
     Write Sudo SSH    sudo augenrules    ${SULKA_SERVICEUSER_NEW_PASSWORD}
     Write Sudo SSH    sudo auditctl -R /etc/audit/audit.rules    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
-    Stop QEMU    ${handle}
+    [Teardown]    Stop QEMU    ${handle}
