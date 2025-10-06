@@ -34,7 +34,7 @@ Run Lynis Scan
 
     ${output}=    Write Sudo SSH   sudo lynis audit system --no-colors    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
-    Should Contain    ${output}    Suggestions (17):
+    Should Contain    ${output}    Suggestions (16):
 
     [Teardown]    Stop QEMU    ${handle}
 
