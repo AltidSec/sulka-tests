@@ -3,7 +3,11 @@ Documentation    Test Sulka build
 Library          OperatingSystem
 Resource         ../resources/git.resource
 Resource         ../resources/kas.resource
-Suite Setup      Clone Repository    scarthgap    https://codeberg.org/AltidSec/kas-sulka.git
+Suite Setup      Run Keywords
+...    Clone Repository    scarthgap    https://codeberg.org/AltidSec/kas-sulka.git
+...    AND    Add Sulka Configuration    DL_DIR="${CURDIR}/../${TEMP_DIR}/downloads"
+...    AND    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${TEMP_DIR}/sstate-cache"
+Suite Teardown    Reset Sulka Configuration
 
 *** Test Cases ***
 Test Sulka Build

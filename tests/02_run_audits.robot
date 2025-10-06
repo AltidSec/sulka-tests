@@ -5,6 +5,8 @@ Resource         ../resources/kas.resource
 Resource         ../resources/ssh.resource
 Suite Setup      Run Keywords
 ...    Add Sulka Configuration    SULKA_INSTALL_SSH_KEYS="1"
+...    AND    Add Sulka Configuration    DL_DIR="${CURDIR}/../${TEMP_DIR}/downloads"
+...    AND    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${TEMP_DIR}/sstate-cache"
 ...    AND    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."
 ...    AND    Add Sulka Configuration    SULKA_SSH_KEYS_DIR="${CURDIR}/../auth-keys/"
 ...    AND    Add Sulka Configuration    SULKA_EXTRA_COMPLIANCY="1"
