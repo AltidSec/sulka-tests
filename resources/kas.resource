@@ -30,7 +30,7 @@ Reset Sulka Image
 Launch Image With QEMU
     [Arguments]    ${configuration}
     ${handle}=    Start Process    kas    shell    ${configuration}    -c    runqemu nographic slirp    cwd=${TEMP_DIR}    stdout=kas_stdout.log    stderr=kas_stderr.log
-    Sleep    80s
+    Sleep    240s
     RETURN    ${handle}
 
 Stop QEMU
