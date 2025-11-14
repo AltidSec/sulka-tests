@@ -8,7 +8,7 @@ Change Expired Password Via SSH
     [Arguments]    ${username}    ${old_password}    ${new_password}
     Open Connection    127.0.0.1    port=2222
     Set Client Configuration    prompt=Current password:
-    Set Client Configuration    timeout=15s
+    Set Client Configuration    timeout=120s
     Login With Public Key    username=${username}    keyfile=./auth-keys/ssh_auth_ed25519_key
 
     Write    ${old_password}

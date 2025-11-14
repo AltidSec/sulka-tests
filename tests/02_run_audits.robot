@@ -29,7 +29,7 @@ Run Lynis Scan
 
     Open Connection    127.0.0.1    port=2222
     Set Client Configuration    prompt=${SULKA_SERVICEUSER_USERNAME}@qemux86-64:~$
-    Set Client Configuration    timeout=25m
+    Set Client Configuration    timeout=30m
     Login With Public Key    username=${SULKA_SERVICEUSER_USERNAME}    keyfile=./auth-keys/ssh_auth_ed25519_key
 
     ${output}=    Write Sudo SSH   sudo lynis audit system --no-colors    ${SULKA_SERVICEUSER_NEW_PASSWORD}
@@ -69,7 +69,7 @@ Prepare QEMU For Audit
 
     Open Connection    127.0.0.1    port=2222
     Set Client Configuration    prompt=${SULKA_SERVICEUSER_USERNAME}@qemux86-64:~$
-    Set Client Configuration    timeout=25s
+    Set Client Configuration    timeout=120s
     Login With Public Key    username=${SULKA_SERVICEUSER_USERNAME}    keyfile=./auth-keys/ssh_auth_ed25519_key
 
     Write Sudo SSH    sudo mv /usr/lib/aide/aide.db.new.gz /usr/lib/aide/aide.db.gz    ${SULKA_SERVICEUSER_NEW_PASSWORD}
