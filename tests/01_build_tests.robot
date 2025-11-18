@@ -5,8 +5,7 @@ Resource         ../resources/git.resource
 Resource         ../resources/kas.resource
 Suite Setup      Run Keywords
 ...    Clone Repository    ${KAS_SULKA_BRANCH}    https://codeberg.org/AltidSec/kas-sulka.git
-...    AND    Add Sulka Configuration    DL_DIR="${CURDIR}/../${TEMP_DIR}/downloads"
-...    AND    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${TEMP_DIR}/sstate-cache"
+...    AND    Add Common Build Configuration
 Suite Teardown    Reset Sulka Configuration
 
 *** Variables ***

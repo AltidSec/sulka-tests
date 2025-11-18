@@ -11,6 +11,16 @@ Add Sulka Configuration
 Reset Sulka Configuration
     Run Process    git    checkout    kas-sulka-configuration.yml    cwd=${TEMP_DIR}
 
+Add Common Build Configuration
+    Add Sulka Configuration    DL_DIR="${CURDIR}/../${TEMP_DIR}/downloads"
+    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${TEMP_DIR}/sstate-cache"
+
+Add Common User Configuration
+    Add Sulka Configuration    SULKA_INSTALL_SSH_KEYS="1"
+    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."
+    Add Sulka Configuration    SULKA_SSH_KEYS_DIR="${CURDIR}/../auth-keys/"
+    Enable Sudo
+
 Enable Sudo
     Append To File    ${TEMP_DIR}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    Defaults:serviceuser secure_path="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin", timestamp_timeout=0\n
     Append To File    ${TEMP_DIR}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    serviceuser ALL=(ALL:ALL) ALL\n
