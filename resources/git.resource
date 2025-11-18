@@ -4,5 +4,5 @@ Library          Process
 
 *** Keywords ***
 Clone Repository
-    [Arguments]    ${branch}    ${url}
-    ${result}=    Run Process    git    clone    -b    ${branch}    ${url}    ${TEMP_DIR}
+    [Arguments]    ${branch}    ${url}    ${checkout_dir}=${TEMP_DIR}
+    ${result}=    Run Process    git    clone    -b    ${branch}    ${url}    ${checkout_dir}

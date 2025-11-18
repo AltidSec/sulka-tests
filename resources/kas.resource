@@ -14,7 +14,8 @@ Add Sulka Configuration
     Append To File    ${TEMP_DIR}/kas-sulka-configuration.yml    \ \ \ \ ${configuration}\n
 
 Reset Sulka Configuration
-    Run Process    git    checkout    kas-sulka-configuration.yml    cwd=${TEMP_DIR}
+    [Arguments]    ${cwd}=${TEMP_DIR}
+    Run Process    git    checkout    kas-sulka-configuration.yml    cwd=${cwd}
 
 Add Common Build Configuration
     Add Sulka Configuration    DL_DIR="${CURDIR}/../${TEMP_DIR}/downloads"
@@ -31,9 +32,9 @@ Enable Sudo
     Append To File    ${TEMP_DIR}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    serviceuser ALL=(ALL:ALL) ALL\n
 
 Build Sulka Image
-    [Arguments]    ${configuration}
+    [Arguments]    ${configuration}    ${cwd}=${TEMP_DIR}
     Log    Starting build...
-    ${result}=    Run Process    kas    build    ${configuration}    cwd=${TEMP_DIR}    timeout=3h 30m    stdout=kas_stdout.log    stderr=kas_stderr.log
+    ${result}=    Run Process    kas    build    ${configuration}    cwd=${cwd}    timeout=3h 30m    stdout=kas_stdout.log    stderr=kas_stderr.log
     Log    Return code: ${result.rc}
     Should Be Equal As Integers    ${result.rc}    0    Build failed
     RETURN    ${result}
