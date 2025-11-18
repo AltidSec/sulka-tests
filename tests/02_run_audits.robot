@@ -12,11 +12,6 @@ Suite Setup      Run Keywords
 ...    AND    Prepare QEMU For Audit
 Suite Teardown    Reset Sulka Configuration
 
-*** Variables ***
-${SULKA_SERVICEUSER_USERNAME}        serviceuser
-${SULKA_SERVICEUSER_OLD_PASSWORD}    test
-${SULKA_SERVICEUSER_NEW_PASSWORD}    Sulka-5ecure-Distro
-
 *** Test Cases ***
 Run Lynis Scan
     [Documentation]    Run Lynis Scan On QEMU

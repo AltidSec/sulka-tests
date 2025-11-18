@@ -3,6 +3,11 @@ Documentation    Keywords for building with kas
 Library          Process
 Library          OperatingSystem
 
+*** Variables ***
+${SULKA_SERVICEUSER_USERNAME}        serviceuser
+${SULKA_SERVICEUSER_OLD_PASSWORD}    test
+${SULKA_SERVICEUSER_NEW_PASSWORD}    Sulka-5ecure-Distro
+
 *** Keywords ***
 Add Sulka Configuration
     [Arguments]    ${configuration}
