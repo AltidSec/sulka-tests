@@ -24,5 +24,5 @@ Write Sudo SSH
     Write    ${command}
     Read Until    Password:
     Write    ${password}
-    ${output}=    Read Until Prompt
+    ${output}=    Read Until Prompt    strip_prompt=True
     RETURN    ${output}
