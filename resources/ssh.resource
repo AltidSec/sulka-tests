@@ -3,6 +3,13 @@ Documentation    SSH helper resources
 Library          SSHLibrary
 
 *** Keywords ***
+Open Default SSH Connection
+    [Arguments]    ${timeout}=1m
+    Open Connection    127.0.0.1    port=2222
+    Set Client Configuration    prompt=${SULKA_SERVICEUSER_USERNAME}@qemux86-64:~$
+    Set Client Configuration    timeout=${timeout}
+    Login With Public Key    username=${SULKA_SERVICEUSER_USERNAME}    keyfile=./auth-keys/ssh_auth_ed25519_key
+
 Change Expired Password Via SSH
     [Documentation]    Change SSH password if it is expired
     [Arguments]    ${username}    ${old_password}    ${new_password}

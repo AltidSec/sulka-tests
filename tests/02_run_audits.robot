@@ -18,10 +18,7 @@ Run Lynis Scan
     [Tags]             audit
     ${handle}=    Launch Image With QEMU    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
 
-    Open Connection    127.0.0.1    port=2222
-    Set Client Configuration    prompt=${SULKA_SERVICEUSER_USERNAME}@qemux86-64:~$
-    Set Client Configuration    timeout=30m
-    Login With Public Key    username=${SULKA_SERVICEUSER_USERNAME}    keyfile=./auth-keys/ssh_auth_ed25519_key
+    Open Default SSH Connection    timeout=30m
 
     ${output}=    Write Sudo SSH   sudo lynis audit system --no-colors    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
@@ -34,10 +31,7 @@ Run OSCAP Scan
     [Tags]             audit
     ${handle}=    Launch Image With QEMU    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
 
-    Open Connection    127.0.0.1    port=2222
-    Set Client Configuration    prompt=${SULKA_SERVICEUSER_USERNAME}@qemux86-64:~$
-    Set Client Configuration    timeout=10m
-    Login With Public Key    username=${SULKA_SERVICEUSER_USERNAME}    keyfile=./auth-keys/ssh_auth_ed25519_key
+    Open Default SSH Connection    timeout=10m
 
     Write Sudo SSH    sudo sh -c 'echo "ID=nodistro" > /etc/os-release'    ${SULKA_SERVICEUSER_NEW_PASSWORD}
     Write Sudo SSH    sudo sh -c 'echo "NAME=\"OpenEmbedded\"" >> /etc/os-release'    ${SULKA_SERVICEUSER_NEW_PASSWORD}
@@ -58,10 +52,7 @@ Prepare QEMU For Audit
     ${handle}=    Launch Image With QEMU    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
     Change Expired Password Via SSH    ${SULKA_SERVICEUSER_USERNAME}    ${SULKA_SERVICEUSER_OLD_PASSWORD}    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
-    Open Connection    127.0.0.1    port=2222
-    Set Client Configuration    prompt=${SULKA_SERVICEUSER_USERNAME}@qemux86-64:~$
-    Set Client Configuration    timeout=120s
-    Login With Public Key    username=${SULKA_SERVICEUSER_USERNAME}    keyfile=./auth-keys/ssh_auth_ed25519_key
+    Open Default SSH Connection    timeout=2m
 
     Write Sudo SSH    sudo mv /usr/lib/aide/aide.db.new.gz /usr/lib/aide/aide.db.gz    ${SULKA_SERVICEUSER_NEW_PASSWORD}
     Write Sudo SSH    sudo augenrules    ${SULKA_SERVICEUSER_NEW_PASSWORD}
