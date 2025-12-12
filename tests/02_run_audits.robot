@@ -7,8 +7,8 @@ Suite Setup      Run Keywords
 ...    Add Common Build Configuration
 ...    AND    Add Common User Configuration
 ...    AND    Add Sulka Configuration    SULKA_EXTRA_COMPLIANCY="1"
-...    AND    Reset Sulka Image    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
-...    AND    Build Sulka Image    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
+...    AND    Reset Sulka Image    ${FULL_CONFIG}
+...    AND    Build Sulka Image    ${FULL_CONFIG}
 ...    AND    Prepare QEMU For Audit
 Suite Teardown    Reset Sulka Configuration
 
@@ -16,7 +16,7 @@ Suite Teardown    Reset Sulka Configuration
 Run Lynis Scan
     [Documentation]    Run Lynis Scan On QEMU
     [Tags]             audit
-    ${handle}=    Launch Image With QEMU    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
+    ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}
 
     Open Default SSH Connection    timeout=60m
 
@@ -29,7 +29,7 @@ Run Lynis Scan
 Run OSCAP Scan
     [Documentation]    Run OSCAP Scan On QEMU
     [Tags]             audit
-    ${handle}=    Launch Image With QEMU    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
+    ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}
 
     Open Default SSH Connection    timeout=10m
 
@@ -49,7 +49,7 @@ Run OSCAP Scan
 Prepare QEMU For Audit
     [Documentation]    Prepare system for audit by enabling monitoring tools
 
-    ${handle}=    Launch Image With QEMU    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
+    ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}
     Change Expired Password Via SSH    ${SULKA_SERVICEUSER_USERNAME}    ${SULKA_SERVICEUSER_OLD_PASSWORD}    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
     Open Default SSH Connection    timeout=2m 30s

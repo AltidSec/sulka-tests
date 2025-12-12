@@ -18,7 +18,7 @@ Test Sulka Build
 
     Remove Directory    ${TEMP_DIR}/build    recursive=True
 
-    Build Sulka Image    kas-sulka.yml
+    Build Sulka Image    ${CORE_CONFIG}
 
 Test Full Sulka Build
     [Documentation]    Clone git repo and run kas build
@@ -26,7 +26,7 @@ Test Full Sulka Build
 
     Remove Directory    ${TEMP_DIR}/build    recursive=True
 
-    Build Sulka Image    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
+    Build Sulka Image    ${FULL_CONFIG}
 
 Test Non GPLv3 Sulka Build
     [Documentation]    Ensure that the default build does not contain GPLv3 licensed code
@@ -37,8 +37,8 @@ Test Non GPLv3 Sulka Build
     Add Sulka Configuration    INCOMPATIBLE_LICENSE:pn-core-image-base = "GPL-3.0* LGPL-3.0*"
 
     # The development image contains GPLv3 licensed code, so use it as a sanity check
-    Build Sulka Image    kas-sulka.yml:extra_fragments/development.yml    expect_success=False
-    Build Sulka Image    kas-sulka.yml
+    Build Sulka Image    ${DEVEL_CONFIG}    expect_success=False
+    Build Sulka Image    ${CORE_CONFIG}
 
     [Teardown]    Reset Sulka Configuration
 
@@ -49,6 +49,6 @@ Test FIRST_BOOT_RELABEL Fails
 
     Remove Directory    ${TEMP_DIR}/build    recursive=True
 
-    Build Sulka Image    kas-sulka.yml    expect_success=False
+    Build Sulka Image    ${CORE_CONFIG}    expect_success=False
 
     [Teardown]    Reset Sulka Configuration

@@ -2,7 +2,7 @@
 Documentation    Keywords for building with kas
 Library          Process
 Library          OperatingSystem
-
+Library          String
 *** Variables ***
 ${SULKA_SERVICEUSER_USERNAME}        serviceuser
 ${SULKA_SERVICEUSER_OLD_PASSWORD}    test
@@ -18,8 +18,18 @@ Reset Sulka Configuration
     Run Process    git    checkout    kas-sulka-configuration.yml    cwd=${cwd}
 
 Add Common Build Configuration
-    Add Sulka Configuration    DL_DIR="${CURDIR}/../${TEMP_DIR}/downloads"
-    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${TEMP_DIR}/sstate-cache"
+    [Arguments]    ${cwd}=${TEMP_DIR}
+    Add Sulka Configuration    DL_DIR="${CURDIR}/../${cwd}/downloads"
+    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${cwd}/sstate-cache"
+
+    # Process GLOBAL_BUILD_CONFIG if it exists and contains values
+    ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
+    Return From Keyword If    '${global_config}' == ''
+    
+    @{config_items}=    Split String    ${global_config}
+    FOR    ${item}    IN    @{config_items}
+        Add Sulka Configuration    ${item}
+    END
 
 Add Common User Configuration
     Add Sulka Configuration    SULKA_INSTALL_SSH_KEYS="1"

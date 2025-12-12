@@ -5,13 +5,13 @@ Resource         ../resources/ssh.resource
 Suite Setup      Run Keywords
 ...    Add Common Build Configuration
 ...    AND    Add Common User Configuration
-...    AND    Reset Sulka Image    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
-...    AND    Build Sulka Image    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
+...    AND    Reset Sulka Image    ${FULL_CONFIG}
+...    AND    Build Sulka Image    ${FULL_CONFIG}
 Suite Teardown    Reset Sulka Configuration
 
 *** Test Cases ***
 Check Files
-    ${handle}=    Launch Image With QEMU    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
+    ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}
 
     Open Default SSH Connection
 

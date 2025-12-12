@@ -1,0 +1,5 @@
+TEMP_DIR = "workspace"
+CORE_CONFIG = "kas-sulka.yml:extra_fragments/kas-layers-development.yml"
+DEVEL_CONFIG = "kas-sulka.yml:extra_fragments/development.yml:extra_fragments/kas-layers-development.yml"
+FULL_CONFIG = "kas-sulka.yml:extra_fragments/development.yml:extra_fragments/audit.yml:extra_fragments/kas-layers-development.yml"
+
