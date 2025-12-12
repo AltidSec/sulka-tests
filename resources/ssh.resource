@@ -25,6 +25,13 @@ Change Expired Password Via SSH
     Write    ${new_password}
     Read Until    passwd: password updated successfully
 
+Write SSH
+    [Documentation]    Write command over SSH
+    [Arguments]    ${command}
+    Write    ${command}
+    ${output}=    Read Until Prompt    strip_prompt=True
+    RETURN    ${output}
+
 Write Sudo SSH
     [Documentation]    Write Sudo command over SSH
     [Arguments]    ${command}    ${password}

@@ -1,5 +1,5 @@
 *** Settings ***
-Documentation    Check Processes
+Documentation    Check That Filesystem Content Is Expected
 Resource         ../resources/kas.resource
 Resource         ../resources/ssh.resource
 Suite Setup      Run Keywords
@@ -10,14 +10,25 @@ Suite Setup      Run Keywords
 Suite Teardown    Reset Sulka Configuration
 
 *** Test Cases ***
-Check Running Processes
+Check Files
     ${handle}=    Launch Image With QEMU    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
 
     Open Default SSH Connection
 
-    ${output}=    Write Sudo SSH    sudo ps auxww    ${SULKA_SERVICEUSER_OLD_PASSWORD}
-    Should Contain    ${output}    /sbin/auditd
-    Should Contain    ${output}    /usr/sbin/syslog-ng
+    # syslog-ng should exist but awk related files should be removed
+    Remote File Should Exist        /usr/sbin/syslog-ng
+    Remote File Should Not Exist    /usr/sbin/syslog-ng-debun
+    Remote File Should Not Exist    /usr/share/syslog-ng/include/scl/syslogconf
 
     [Teardown]    Stop QEMU    ${handle}
 
+*** Keywords ***
+Remote File Should Exist
+    [Arguments]    ${path}
+    ${output}=    Write SSH    ls ${path}
+    Should Be Equal As Strings    ${output.strip()}    ${path}
+
+Remote File Should Not Exist
+    [Arguments]    ${path}
+    ${output}=    Write SSH    ls ${path}
+    Should Contain    ${output}    No such file or directory
