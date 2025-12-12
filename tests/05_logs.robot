@@ -25,4 +25,14 @@ Check Logs For Errors And Warnings
 
     [Teardown]    Stop QEMU    ${handle}
 
+Check The System Date Gets Updated
+    ${handle}=    Launch Image With QEMU    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
 
+    Open Default SSH Connection
+    ${output}=    Execute Command    date +%Y
+    # We cannot know the exact date and guarantee that the test device
+    # has network access for time, but if year is smaller than 2015
+    # the initial time setup has failed
+    Should Be True    ${output}>2015
+
+    [Teardown]    Stop QEMU    ${handle}
