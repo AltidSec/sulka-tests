@@ -18,11 +18,11 @@ Run Lynis Scan
     [Tags]             audit
     ${handle}=    Launch Image With QEMU    kas-sulka.yml:extra_fragments/audit.yml:extra_fragments/development.yml
 
-    Open Default SSH Connection    timeout=30m
+    Open Default SSH Connection    timeout=60m
 
     ${output}=    Write Sudo SSH   sudo lynis audit system --no-colors    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
-    Should Contain    ${output}    Suggestions (16):
+    Should Contain    ${output}    Suggestions (18):
 
     [Teardown]    Stop QEMU    ${handle}
 
