@@ -19,8 +19,17 @@ Reset Sulka Configuration
 
 Add Common Build Configuration
     [Arguments]    ${cwd}=${TEMP_DIR}
-    Add Sulka Configuration    DL_DIR="${CURDIR}/../${cwd}/downloads"
-    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${cwd}/sstate-cache"
+    ${use_global_dl}=    Get Variable Value    ${ENABLE_GLOBAL_DL_DIR}    0
+    Run Keyword If    ${use_global_dl} == 1
+    ...    Add Sulka Configuration    DL_DIR="/oe/downloads"
+    ...    ELSE
+    ...    Add Sulka Configuration    DL_DIR="${CURDIR}/../${cwd}/downloads"
+
+    ${use_global_sstate}=    Get Variable Value    ${ENABLE_GLOBAL_SSTATE_DIR}    0
+    Run Keyword If    ${use_global_sstate} == 1
+    ...    Add Sulka Configuration    SSTATE_DIR="/oe/sstate-cache"
+    ...    ELSE
+    ...    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${cwd}/sstate-cache"
 
     # Process GLOBAL_BUILD_CONFIG if it exists and contains values
     ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
