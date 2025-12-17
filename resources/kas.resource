@@ -10,8 +10,8 @@ ${SULKA_SERVICEUSER_NEW_PASSWORD}    Sulka-5ecure-Distro
 
 *** Keywords ***
 Add Sulka Configuration
-    [Arguments]    ${configuration}
-    Append To File    ${TEMP_DIR}/kas-sulka-configuration.yml    \ \ \ \ ${configuration}\n
+    [Arguments]    ${configuration}    ${cwd}=${TEMP_DIR}
+    Append To File    ${cwd}/kas-sulka-configuration.yml    \ \ \ \ ${configuration}\n
 
 Reset Sulka Configuration
     [Arguments]    ${cwd}=${TEMP_DIR}
@@ -21,15 +21,15 @@ Add Common Build Configuration
     [Arguments]    ${cwd}=${TEMP_DIR}
     ${use_global_dl}=    Get Variable Value    ${ENABLE_GLOBAL_DL_DIR}    0
     Run Keyword If    ${use_global_dl} == 1
-    ...    Add Sulka Configuration    DL_DIR="/oe/downloads"
+    ...    Add Sulka Configuration    DL_DIR="/oe/downloads"    cwd=${cwd}
     ...    ELSE
-    ...    Add Sulka Configuration    DL_DIR="${CURDIR}/../${cwd}/downloads"
+    ...    Add Sulka Configuration    DL_DIR="${CURDIR}/../${cwd}/downloads"    cwd=${cwd}
 
     ${use_global_sstate}=    Get Variable Value    ${ENABLE_GLOBAL_SSTATE_DIR}    0
     Run Keyword If    ${use_global_sstate} == 1
-    ...    Add Sulka Configuration    SSTATE_DIR="/oe/sstate-cache"
+    ...    Add Sulka Configuration    SSTATE_DIR="/oe/sstate-cache"    cwd=${cwd}
     ...    ELSE
-    ...    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${cwd}/sstate-cache"
+    ...    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${cwd}/sstate-cache"    cwd=${cwd}
 
     # Process GLOBAL_BUILD_CONFIG if it exists and contains values
     ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
@@ -37,18 +37,20 @@ Add Common Build Configuration
     
     @{config_items}=    Split String    ${global_config}
     FOR    ${item}    IN    @{config_items}
-        Add Sulka Configuration    ${item}
+        Add Sulka Configuration    ${item}    cwd=${cwd}
     END
 
 Add Common User Configuration
-    Add Sulka Configuration    SULKA_INSTALL_SSH_KEYS="1"
-    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."
-    Add Sulka Configuration    SULKA_SSH_KEYS_DIR="${CURDIR}/../auth-keys/"
-    Enable Sudo
+    [Arguments]    ${cwd}=${TEMP_DIR}
+    Add Sulka Configuration    SULKA_INSTALL_SSH_KEYS="1"    cwd=${cwd}
+    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."    cwd=${cwd}
+    Add Sulka Configuration    SULKA_SSH_KEYS_DIR="${CURDIR}/../auth-keys/"    cwd=${cwd}
+    Enable Sudo    cwd=${cwd}
 
 Enable Sudo
-    Append To File    ${TEMP_DIR}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    Defaults:serviceuser secure_path="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin", timestamp_timeout=0\n
-    Append To File    ${TEMP_DIR}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    serviceuser ALL=(ALL:ALL) ALL\n
+    [Arguments]    ${cwd}=${TEMP_DIR}
+    Append To File    ${cwd}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    Defaults:serviceuser secure_path="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin", timestamp_timeout=0\n
+    Append To File    ${cwd}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    serviceuser ALL=(ALL:ALL) ALL\n
 
 Build Sulka Image
     [Arguments]    ${configuration}    ${cwd}=${TEMP_DIR}    ${expect_success}=True
