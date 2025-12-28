@@ -23,13 +23,13 @@ Add Common Build Configuration
     Run Keyword If    ${use_global_dl} == 1
     ...    Add Sulka Configuration    DL_DIR="/oe/downloads"    cwd=${cwd}
     ...    ELSE
-    ...    Add Sulka Configuration    DL_DIR="${CURDIR}/../${cwd}/downloads"    cwd=${cwd}
+    ...    Add Sulka Configuration    DL_DIR="${CURDIR}/../downloads"    cwd=${cwd}
 
     ${use_global_sstate}=    Get Variable Value    ${ENABLE_GLOBAL_SSTATE_DIR}    0
     Run Keyword If    ${use_global_sstate} == 1
     ...    Add Sulka Configuration    SSTATE_DIR="/oe/sstate-cache"    cwd=${cwd}
     ...    ELSE
-    ...    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../${cwd}/sstate-cache"    cwd=${cwd}
+    ...    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../sstate-cache"    cwd=${cwd}
 
     # Process GLOBAL_BUILD_CONFIG if it exists and contains values
     ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}

@@ -3,4 +3,6 @@ output.xml
 report.html
 venv
 workspace*
+downloads
+sstate-cache
 auth-keys
