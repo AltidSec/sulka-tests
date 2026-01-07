@@ -54,7 +54,6 @@ Prepare QEMU For Audit
 
     Open Default SSH Connection    timeout=2m 30s
 
-    Write Sudo SSH    sudo mv /usr/lib/aide/aide.db.new.gz /usr/lib/aide/aide.db.gz    ${SULKA_SERVICEUSER_NEW_PASSWORD}
     Write Sudo SSH    sudo augenrules    ${SULKA_SERVICEUSER_NEW_PASSWORD}
     Write Sudo SSH    sudo auditctl -R /etc/audit/audit.rules    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
