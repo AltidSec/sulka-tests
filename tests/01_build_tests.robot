@@ -1,6 +1,7 @@
 *** Settings ***
 Documentation    Test Sulka build
 Library          OperatingSystem
+Library          DateTime
 Resource         ../resources/git.resource
 Resource         ../resources/kas.resource
 Suite Setup      Run Keywords
@@ -12,6 +13,19 @@ Suite Teardown    Reset Sulka Configuration
 ${KAS_SULKA_BRANCH}    scarthgap
 
 *** Test Cases ***
+Test Build Environment
+    [Documentation]    Check the build env for expected values
+    [Tags]             bitbake    build
+
+    ${timestamp}=    Get Current Date    result_format=epoch    exclude_millis=True
+    Run Process    kas    shell    ${CORE_CONFIG}    -c    bitbake -e core-image-base    cwd=${TEMP_DIR}    timeout=3m    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
+
+    # Check distro features
+    ${result}=    Run Process    grep    kas_stdout_${timestamp}.log    -e    ^DISTRO_FEATURES\=.*security    cwd=${TEMP_DIR}
+    Should Be Equal As Integers    ${result.rc}    0
+    ${result}=    Run Process    grep    kas_stdout_${timestamp}.log    -e    ^DISTRO_FEATURES\=.*integrity    cwd=${TEMP_DIR}
+    Should Be Equal As Integers    ${result.rc}    0
+
 Test Sulka Build
     [Documentation]    Clone git repo and run kas build
     [Tags]             bitbake    build
