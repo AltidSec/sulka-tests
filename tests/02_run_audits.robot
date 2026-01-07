@@ -22,7 +22,12 @@ Run Lynis Scan
 
     ${output}=    Write Sudo SSH   sudo lynis audit system --no-colors    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
-    Should Contain    ${output}    Suggestions (18):
+    ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
+    IF    'INIT_MANAGER="sysvinit"' in $global_config
+        Should Contain    ${output}    Suggestions (18):
+    ELSE
+        Should Contain    ${output}    Suggestions (16):
+    END
 
     [Teardown]    Stop QEMU    ${handle}
 
