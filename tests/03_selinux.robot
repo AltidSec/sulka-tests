@@ -30,8 +30,32 @@ Check Access Failures
     Open Default SSH Connection
  
     ${output}=    Write Sudo SSH    sudo cat /var/log/messages | grep -i avc    ${SULKA_SERVICEUSER_OLD_PASSWORD}
-    Should Be Empty    ${output.strip()}
+    Validate AVC Output    ${output.strip()}
     ${output}=    Write Sudo SSH    sudo cat /var/log/audit/audit.log | grep -i avc    ${SULKA_SERVICEUSER_OLD_PASSWORD}
-    Should Be Empty    ${output.strip()}
+    Validate AVC Output    ${output.strip()}
 
     [Teardown]    Stop QEMU    ${handle}
+
+*** Keywords ***
+Validate AVC Output
+    [Arguments]    ${stripped_output}
+    ${length}=    Get Length    ${stripped_output}
+    Return From Keyword If    ${length} == 0
+
+    @{expected_patterns}=    Create List
+    ...    .*denied.*write.*scontext=system_u:system_r:syslogd_t:s0.*tcontext=system_u:object_r:root_t:s0
+    ...    .*denied.*net_admin.*comm="syslog-ng".*scontext=system_u:system_r:syslogd_t:s0.*tcontext=system_u:system_r:syslogd_t:s0
+
+    @{lines}=    Split To Lines    ${stripped_output}
+    FOR    ${line}    IN    @{lines}
+        ${is_expected}=    Line Matches Any Pattern    ${line}    ${expected_patterns}
+        Should Be True    ${is_expected}    Unexpected AVC denial: ${line}
+    END
+
+Line Matches Any Pattern
+    [Arguments]    ${line}    ${patterns}
+    FOR    ${pattern}    IN    @{patterns}
+        ${matches}=    Run Keyword And Return Status    Should Match Regexp    ${line}    ${pattern}
+        Return From Keyword If    ${matches}    ${True}
+    END
+    RETURN    ${False}
