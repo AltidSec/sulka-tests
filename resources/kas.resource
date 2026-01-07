@@ -45,12 +45,7 @@ Add Common User Configuration
     Add Sulka Configuration    SULKA_INSTALL_SSH_KEYS="1"    cwd=${cwd}
     Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."    cwd=${cwd}
     Add Sulka Configuration    SULKA_SSH_KEYS_DIR="${CURDIR}/../auth-keys/"    cwd=${cwd}
-    Enable Sudo    cwd=${cwd}
-
-Enable Sudo
-    [Arguments]    ${cwd}=${TEMP_DIR}
-    Append To File    ${cwd}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    Defaults:serviceuser secure_path="/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin", timestamp_timeout=0\n
-    Append To File    ${cwd}/meta-sulka-distro/recipes-extended/sudo/files/serviceuser.conf    serviceuser ALL=(ALL:ALL) ALL\n
+    Add Sulka Configuration    SULKA_SERVICEUSER_ENABLE_SUDO="1"    cwd=${cwd}
 
 Build Sulka Image
     [Arguments]    ${configuration}    ${cwd}=${TEMP_DIR}    ${expect_success}=True
