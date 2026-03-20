@@ -26,6 +26,8 @@ Test Build Environment
     ${result}=    Run Process    grep    kas_stdout_${timestamp}.log    -e    ^DISTRO_FEATURES\=.*integrity    cwd=${TEMP_DIR}
     Should Be Equal As Integers    ${result.rc}    0
 
+    Sleep    5 Seconds
+
 Test Sulka Build
     [Documentation]    Clone git repo and run kas build
     [Tags]             bitbake    build

@@ -60,6 +60,8 @@ Build Sulka Image
         Should Not Be Equal As Integers    ${result.rc}    0    Build was expected to fail but succeeded
     END
 
+    Sleep    5 Seconds
+
     RETURN    ${result}
 
 Reset Sulka Image
