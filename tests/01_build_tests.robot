@@ -61,9 +61,11 @@ Test Non GPLv3 Sulka Build
 Test FIRST_BOOT_RELABEL Fails
     [Documentation]    Clone git repo and run kas build
     [Tags]             bitbake    build
-    [Setup]            Add Sulka Configuration    FIRST_BOOT_RELABEL = "1"
+    [Setup]            Add Common Build Configuration
 
     Remove Directory    ${TEMP_DIR}/build    recursive=True
+
+    Add Sulka Configuration    FIRST_BOOT_RELABEL = "1"
 
     Build Sulka Image    ${CORE_CONFIG}    expect_success=False
 
