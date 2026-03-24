@@ -7,6 +7,7 @@ Suite Setup      Run Keywords
 ...    Add Common Build Configuration
 ...    AND    Add Common User Configuration
 ...    AND    Add Sulka Configuration    SULKA_EXTRA_COMPLIANCY="1"
+...    AND    Add Sulka Configuration    SULKA_ENABLE_READ_ONLY_ROOTFS="0"
 ...    AND    Reset Sulka Image    ${FULL_CONFIG}
 ...    AND    Build Sulka Image    ${FULL_CONFIG}
 ...    AND    Prepare QEMU For Audit
@@ -59,7 +60,9 @@ Prepare QEMU For Audit
 
     Open Default SSH Connection    timeout=2m 30s
 
-    Write Sudo SSH    sudo augenrules    ${SULKA_SERVICEUSER_NEW_PASSWORD}
-    Write Sudo SSH    sudo auditctl -R /etc/audit/audit.rules    ${SULKA_SERVICEUSER_NEW_PASSWORD}
+    # Not sure why, but it seems like at least one sudo command needs to be executed
+    # after the password change to make the password stick. Possibly a timing issue,
+    # so run sync to ensure that the changes get written.
+    Write Sudo SSH     sudo sync      ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
     [Teardown]    Stop QEMU    ${handle}
