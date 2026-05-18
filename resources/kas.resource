@@ -68,6 +68,7 @@ Build Sulka Image
     [Arguments]    ${configuration}    ${cwd}=${TEMP_DIR}    ${expect_success}=True
     Log    Starting build...
     ${timestamp}=    Get Current Date    result_format=epoch
+    ${result}=    Run Process    kas    checkout    ${configuration}    cwd=${cwd}    timeout=2h    stdout=kas_stdout_checkout_${timestamp}.log    stderr=kas_stderr_checkout_${timestamp}.log
     ${result}=    Run Process    kas    build    ${configuration}    cwd=${cwd}    timeout=3h 30m    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
     Log    Return code: ${result.rc}
     IF    ${expect_success}
