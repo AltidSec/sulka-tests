@@ -65,6 +65,8 @@ Test Read-Only Root File System
     Stop QEMU    ${handle}
 
     Add Sulka Configuration    SULKA_ENABLE_READ_ONLY_ROOTFS="0"
+    Add Sulka Configuration    IMAGE_FSTYPES:append=" ext4"
+    Add Sulka Configuration    QB_DEFAULT_FSTYPE="ext4"
 
     Build Sulka Image    ${FULL_CONFIG}
 

@@ -9,6 +9,8 @@ Suite Setup      Run Keywords
 ...    AND    Add Common User Configuration
 ...    AND    Add Sulka Configuration    SULKA_EXTRA_COMPLIANCY="1"
 ...    AND    Add Sulka Configuration    SULKA_ENABLE_READ_ONLY_ROOTFS="0"
+...    AND    Add Sulka Configuration    IMAGE_FSTYPES:append=" ext4"
+...    AND    Add Sulka Configuration    QB_DEFAULT_FSTYPE="ext4"
 ...    AND    Reset Sulka Image    ${FULL_CONFIG}
 ...    AND    Build Sulka Image    ${FULL_CONFIG}
 ...    AND    Prepare QEMU For Audit
