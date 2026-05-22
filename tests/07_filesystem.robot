@@ -25,10 +25,12 @@ Check Files
 *** Keywords ***
 Remote File Should Exist
     [Arguments]    ${path}
-    ${output}=    Write SSH    ls ${path}
+    ${output}=    Execute Command    ls ${path}
     Should Be Equal As Strings    ${output.strip()}    ${path}
+    Sleep    1 Seconds
 
 Remote File Should Not Exist
     [Arguments]    ${path}
-    ${output}=    Write SSH    ls ${path}
-    Should Contain    ${output}    No such file or directory
+    ${output}    ${error}=    Execute Command    ls ${path}    return_stderr=True
+    Should Be Equal As Strings    ${error}    ls: cannot access '${path}': No such file or directory
+    Sleep    1 Seconds
