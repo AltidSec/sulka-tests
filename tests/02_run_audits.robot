@@ -28,11 +28,14 @@ Run Lynis Scan
 
     ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
     IF    'INIT_MANAGER="sysvinit"' in $global_config
-        ${expected}=    Get Expected Value    lynis_suggestions_sysvinit
+        ${expected_suggestions}=    Get Expected Value    lynis_suggestions_sysvinit
+        ${expected_warnings}=    Get Expected Value    lynis_warnings_sysvinit
     ELSE
-        ${expected}=    Get Expected Value    lynis_suggestions_default
+        ${expected_suggestions}=    Get Expected Value    lynis_suggestions_default
+        ${expected_warnings}=    Get Expected Value    lynis_warnings_default
     END
-    Should Contain    ${output}    ${expected}
+    Should Contain    ${output}    ${expected_suggestions}
+    Should Contain    ${output}    ${expected_warnings}
 
     [Teardown]    Stop QEMU    ${handle}
 
