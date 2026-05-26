@@ -4,6 +4,8 @@ Library          Process
 Library          OperatingSystem
 Library          String
 Library          DateTime
+Library          SSHLibrary
+
 *** Variables ***
 ${SULKA_SERVICEUSER_USERNAME}        serviceuser
 ${SULKA_SERVICEUSER_OLD_PASSWORD}    test
@@ -70,11 +72,19 @@ Reset Sulka Image
     ${result}=    Run Process    kas    shell    ${configuration}    -c    bitbake -c cleanall core-image-base    cwd=${TEMP_DIR}    timeout=5m    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
 
 Launch Image With QEMU
-    [Arguments]    ${configuration}
+    [Documentation]    Start QEMU under kas; block until SSH is reachable or ${ssh_ready_timeout} elapses.
+    [Arguments]    ${configuration}    ${ssh_ready_timeout}=5min
     ${timestamp}=    Get Current Date    result_format=epoch
     ${handle}=    Start Process    kas    shell    ${configuration}    -c    runqemu nographic slirp qemuparams\=\"-m 1024\"    cwd=${TEMP_DIR}    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
-    Sleep    280s
+    Wait Until Keyword Succeeds    ${ssh_ready_timeout}    5s    QEMU SSH Should Accept Login
     RETURN    ${handle}
+
+QEMU SSH Should Accept Login
+    [Documentation]    Fails unless 127.0.0.1:2222 accepts a key-based login for ${SULKA_SERVICEUSER_USERNAME}.
+    Open Connection    127.0.0.1    port=2222
+    ${logged_in}=    Run Keyword And Return Status    Login With Public Key    username=${SULKA_SERVICEUSER_USERNAME}    keyfile=./auth-keys/ssh_auth_ed25519_key
+    Close Connection
+    Should Be True    ${logged_in}    QEMU SSH not ready
 
 Stop QEMU
     [Arguments]    ${handle}
