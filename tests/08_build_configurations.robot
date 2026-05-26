@@ -76,7 +76,7 @@ Test Read-Only Root File System
     Should Be Equal As Integers    ${rc}    0
     Close Connection
     Open Default SSH Connection
-    ${stdout}    ${rc}    Execute Command     [ "$(tr ' ' '\\n' < /proc/cmdline | grep -E '^(ro|rw)$' | tail -1)" != "ro" ]    retrun_stdout=False    return_rc=True
+    ${rc}=    Execute Command     [ "$(tr ' ' '\\n' < /proc/cmdline | grep -E '^(ro|rw)$' | tail -1)" != "ro" ]    return_stdout=False    return_rc=True
     Should Be Equal As Integers    ${rc}    0
     ${output}=    Write Sudo SSH    sudo touch /test_touch    ${SULKA_SERVICEUSER_OLD_PASSWORD}
     ${output}=    Write Sudo SSH    sudo ls / | grep test_touch    ${SULKA_SERVICEUSER_OLD_PASSWORD}
