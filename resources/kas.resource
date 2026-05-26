@@ -21,23 +21,30 @@ Reset Sulka Configuration
     Run Process    git    checkout    kas-sulka-configuration.yml    cwd=${cwd}
 
 Add Common Build Configuration
+    [Documentation]    Append the default DL_DIR and SSTATE_DIR entries to the Sulka build config,
+    ...                plus any extra entries listed in ${GLOBAL_BUILD_CONFIG}. The DL_DIR and
+    ...                SSTATE_DIR paths point to /oe/* when ${ENABLE_GLOBAL_DL_DIR} / ${ENABLE_GLOBAL_SSTATE_DIR}
+    ...                are "1" (shared host caches) and to per-checkout paths otherwise.
+    ...                ${GLOBAL_BUILD_CONFIG} is split on whitespace, so values cannot contain
+    ...                spaces — e.g. EXTRA_IMAGE_FEATURES="debug-tweaks tools-debug" will split wrong.
     [Arguments]    ${cwd}=${TEMP_DIR}
     ${use_global_dl}=    Get Variable Value    ${ENABLE_GLOBAL_DL_DIR}    0
-    Run Keyword If    ${use_global_dl} == 1
-    ...    Add Sulka Configuration    DL_DIR="/oe/downloads"    cwd=${cwd}
-    ...    ELSE
-    ...    Add Sulka Configuration    DL_DIR="${CURDIR}/../downloads"    cwd=${cwd}
+    IF    '${use_global_dl}' == '1'
+        Add Sulka Configuration    DL_DIR="/oe/downloads"    cwd=${cwd}
+    ELSE
+        Add Sulka Configuration    DL_DIR="${CURDIR}/../downloads"    cwd=${cwd}
+    END
 
     ${use_global_sstate}=    Get Variable Value    ${ENABLE_GLOBAL_SSTATE_DIR}    0
-    Run Keyword If    ${use_global_sstate} == 1
-    ...    Add Sulka Configuration    SSTATE_DIR="/oe/sstate-cache"    cwd=${cwd}
-    ...    ELSE
-    ...    Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../sstate-cache"    cwd=${cwd}
+    IF    '${use_global_sstate}' == '1'
+        Add Sulka Configuration    SSTATE_DIR="/oe/sstate-cache"    cwd=${cwd}
+    ELSE
+        Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../sstate-cache"    cwd=${cwd}
+    END
 
-    # Process GLOBAL_BUILD_CONFIG if it exists and contains values
     ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
-    Return From Keyword If    '${global_config}' == ''
-    
+    IF    '${global_config}' == ''    RETURN
+
     @{config_items}=    Split String    ${global_config}
     FOR    ${item}    IN    @{config_items}
         Add Sulka Configuration    ${item}    cwd=${cwd}
