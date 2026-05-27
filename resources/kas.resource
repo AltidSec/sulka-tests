@@ -51,11 +51,18 @@ Add Common Build Configuration
     END
 
 Add Common User Configuration
-    [Arguments]    ${cwd}=${TEMP_DIR}
+    [Documentation]    Append the serviceuser-related entries to the Sulka build config: install the
+    ...                SSH public key from ${CURDIR}/../auth-keys/, set the serviceuser password hash,
+    ...                and (by default) grant the serviceuser sudo access via
+    ...                SULKA_SERVICEUSER_ENABLE_SUDO="1". Pass enable_sudo=${False} to omit the sudo
+    ...                line for tests that verify sudo is disabled by default.
+    [Arguments]    ${cwd}=${TEMP_DIR}    ${enable_sudo}=${True}
     Add Sulka Configuration    SULKA_INSTALL_SSH_KEYS="1"    cwd=${cwd}
     Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."    cwd=${cwd}
     Add Sulka Configuration    SULKA_SSH_KEYS_DIR="${CURDIR}/../auth-keys/"    cwd=${cwd}
-    Add Sulka Configuration    SULKA_SERVICEUSER_ENABLE_SUDO="1"    cwd=${cwd}
+    IF    ${enable_sudo}
+        Add Sulka Configuration    SULKA_SERVICEUSER_ENABLE_SUDO="1"    cwd=${cwd}
+    END
 
 Build Sulka Image
     [Arguments]    ${configuration}    ${cwd}=${TEMP_DIR}    ${expect_success}=True

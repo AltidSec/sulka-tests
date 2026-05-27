@@ -13,9 +13,7 @@ Test sudo enable
     [Tags]             configuration
     [Setup]            Run Keywords
     ...    Add Common Build Configuration
-    ...    AND    Add Sulka Configuration    SULKA_INSTALL_SSH_KEYS="1"
-    ...    AND    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."
-    ...    AND    Add Sulka Configuration    SULKA_SSH_KEYS_DIR="${CURDIR}/../auth-keys/"
+    ...    AND    Add Common User Configuration    enable_sudo=${False}
 
     Build Sulka Image    ${FULL_CONFIG}
 
