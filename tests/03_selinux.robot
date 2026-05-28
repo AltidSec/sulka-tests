@@ -3,6 +3,7 @@ Documentation    Run SELinux checks on Sulka
 Library          SSHLibrary
 Resource         ../resources/kas.resource
 Resource         ../resources/ssh.resource
+Resource         ../resources/validation.resource
 Suite Setup      Run Keywords
 ...    Add Common Build Configuration
 ...    AND    Add Common User Configuration
@@ -39,23 +40,8 @@ Check Access Failures
 *** Keywords ***
 Validate AVC Output
     [Arguments]    ${stripped_output}
-    ${length}=    Get Length    ${stripped_output}
-    Return From Keyword If    ${length} == 0
-
     @{expected_patterns}=    Create List
     ...    .*denied.*write.*scontext=system_u:system_r:syslogd_t:s0.*tcontext=system_u:object_r:root_t:s0
     ...    .*denied.*net_admin.*comm="syslog-ng".*scontext=system_u:system_r:syslogd_t:s0.*tcontext=system_u:system_r:syslogd_t:s0
 
-    @{lines}=    Split To Lines    ${stripped_output}
-    FOR    ${line}    IN    @{lines}
-        ${is_expected}=    Line Matches Any Pattern    ${line}    ${expected_patterns}
-        Should Be True    ${is_expected}    Unexpected AVC denial: ${line}
-    END
-
-Line Matches Any Pattern
-    [Arguments]    ${line}    ${patterns}
-    FOR    ${pattern}    IN    @{patterns}
-        ${matches}=    Run Keyword And Return Status    Should Match Regexp    ${line}    ${pattern}
-        Return From Keyword If    ${matches}    ${True}
-    END
-    RETURN    ${False}
+    Validate Output Against Allowlist    ${stripped_output}    ${expected_patterns}    AVC denial(s)
