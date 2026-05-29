@@ -85,3 +85,23 @@ Test Read-Only Root File System
     [Teardown]    Run Keywords
     ...    Reset Sulka Configuration
     ...    AND    Stop QEMU    ${handle}
+
+Test Serviceuser Password Format Check
+    [Documentation]    The build must fail at config-parse time when SULKA_SERVICEUSER_PASSWORD
+    ...                contains unescaped dollar signs. Reuses the example hash from
+    ...                Add Common User Configuration with the backslash escaping removed.
+    [Tags]             configuration
+    [Setup]            Add Common Build Configuration
+
+    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\$y\$jCT\$seWjSFPPf4lsQL74hWMWG1$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."
+    ${result}=    Build Sulka Image    ${FULL_CONFIG}    expect_success=False
+    Should Contain    ${result.stdout}${result.stderr}    contains unescaped dollar signs
+
+    # No need to reset configuration, last assignment takes precedence
+    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD=""
+    ${result}=    Build Sulka Image    ${FULL_CONFIG}    expect_success=True
+
+    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."
+    ${result}=    Build Sulka Image    ${FULL_CONFIG}    expect_success=True
+
+    [Teardown]    Reset Sulka Configuration
