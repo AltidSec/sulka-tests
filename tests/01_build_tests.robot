@@ -4,13 +4,8 @@ Library          OperatingSystem
 Library          DateTime
 Resource         ../resources/git.resource
 Resource         ../resources/kas.resource
-Suite Setup      Run Keywords
-...    Clone Repository    ${KAS_SULKA_BRANCH}    https://codeberg.org/AltidSec/kas-sulka.git
-...    AND    Add Common Build Configuration
+Suite Setup      Add Common Build Configuration
 Suite Teardown    Reset Sulka Configuration
-
-*** Variables ***
-${KAS_SULKA_BRANCH}    scarthgap
 
 *** Test Cases ***
 Test Build Environment

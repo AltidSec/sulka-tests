@@ -4,7 +4,7 @@ Library          OperatingSystem
 Resource         ../resources/git.resource
 Resource         ../resources/kas.resource
 Suite Setup      Run Keywords
-...    Clone Repository    ${KAS_SULKA_BRANCH}    https://codeberg.org/AltidSec/kas-sulka-raspberrypi-example.git    checkout_dir=workspace-rpi
+...    Clone Repository If Needed    ${KAS_SULKA_BRANCH}    https://codeberg.org/AltidSec/kas-sulka-raspberrypi-example.git    checkout_dir=workspace-rpi
 ...    AND    Add Common Build Configuration    cwd=workspace-rpi
 Suite Teardown    Reset Sulka Configuration     cwd=workspace-rpi
 
