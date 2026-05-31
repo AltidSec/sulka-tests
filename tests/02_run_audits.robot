@@ -3,6 +3,7 @@ Documentation    Run Audits on Sulka
 Library          SSHLibrary
 Resource         ../resources/kas.resource
 Resource         ../resources/ssh.resource
+Resource         ../resources/versions.resource
 Suite Setup      Run Keywords
 ...    Add Common Build Configuration
 ...    AND    Add Common User Configuration
@@ -25,10 +26,11 @@ Run Lynis Scan
 
     ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
     IF    'INIT_MANAGER="sysvinit"' in $global_config
-        Should Contain    ${output}    Suggestions (18):
+        ${expected}=    Get Expected Value    lynis_suggestions_sysvinit
     ELSE
-        Should Contain    ${output}    Suggestions (16):
+        ${expected}=    Get Expected Value    lynis_suggestions_default
     END
+    Should Contain    ${output}    ${expected}
 
     [Teardown]    Stop QEMU    ${handle}
 
@@ -47,7 +49,8 @@ Run OSCAP Scan
 
     ${output}=    Write Sudo SSH   sudo oscap xccdf eval --profile xccdf_org.ssgproject.content_profile_expanded /usr/share/xml/scap/ssg/content/ssg-openembedded-ds.xml    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
-    Should Contain X Times    ${output}    fail    2
+    ${expected}=    Get Expected Value    oscap_fail_count
+    Should Contain X Times    ${output}    fail    ${expected}
 
     [Teardown]    Stop QEMU    ${handle}
 

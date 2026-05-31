@@ -2,6 +2,7 @@
 Documentation    Kernel related tests
 Resource         ../resources/kas.resource
 Resource         ../resources/ssh.resource
+Resource         ../resources/versions.resource
 Suite Setup      Run Keywords
 ...    Add Common Build Configuration
 ...    AND    Add Common User Configuration
@@ -16,6 +17,7 @@ Check Kernel Hardening
     Open Default SSH Connection
 
     ${output}=    Write Sudo SSH    sudo kernel-hardening-checker -a    ${SULKA_SERVICEUSER_OLD_PASSWORD}
-    Should Contain    ${output}    [+] Config check is finished: 'OK' - 269 / 'FAIL' - 34
+    ${expected}=    Get Expected Value    kernel_hardening
+    Should Contain    ${output}    ${expected}
 
     [Teardown]    Stop QEMU    ${handle}

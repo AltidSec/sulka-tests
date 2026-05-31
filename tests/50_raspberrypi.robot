@@ -8,9 +8,6 @@ Suite Setup      Run Keywords
 ...    AND    Add Common Build Configuration    cwd=workspace-rpi
 Suite Teardown    Reset Sulka Configuration     cwd=workspace-rpi
 
-*** Variables ***
-${KAS_SULKA_BRANCH}    scarthgap
-
 *** Test Cases ***
 Test Raspberry Pi Build
     [Documentation]    Clone git repo and run kas build
