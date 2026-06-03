@@ -36,6 +36,7 @@ Check Logs For Errors And Warnings
         Validate Output Against Allowlist    ${output.strip()}    ${allowed}    warn/error lines in journal
 
         @{allowed}=    Create List
+        ...    .*tsc: Unable to calibrate against PIT
         ...    .*mtrr: your CPUs had inconsistent (fixed MTRR|variable MTRR|MTRRdefType) settings
         ...    .*systemd-sysctl.*Couldn't write '[0-9]+' to '(kernel\/sysrq|kernel\/core_uses_pid)', ignoring: No such file or directory
         ...    .*kauditd_printk_skb: [0-9]+ callbacks suppressed
