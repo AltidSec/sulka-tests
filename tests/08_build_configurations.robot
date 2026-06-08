@@ -105,3 +105,43 @@ Test Serviceuser Password Format Check
     ${result}=    Build Sulka Image    ${FULL_CONFIG}    expect_success=True
 
     [Teardown]    Reset Sulka Configuration
+
+Test fstab Hardening
+    [Documentation]    Test the SULKA_HARDEN_FSTAB configuration by inspecting the base-files fstab
+    ...                staged on the host, without booting QEMU.
+    [Tags]             configuration
+    [Setup]            Add Common Build Configuration
+
+    Add Sulka Configuration    SULKA_HARDEN_FSTAB="1"
+    Clean Sulka Recipe    base-files    ${FULL_CONFIG}
+    Build Sulka Image    ${FULL_CONFIG}
+    ${fstab}=    Read Base Files Fstab
+    Fstab Should Contain Mount    ${fstab}    proc     /proc            proc     hidepid=2
+    Fstab Should Contain Mount    ${fstab}    tmpfs    /run             tmpfs    mode=0755,nodev,nosuid,noexec,strictatime
+    Fstab Should Contain Mount    ${fstab}    tmpfs    /var/volatile    tmpfs    nodev,nosuid,noexec,rootcontext=system_u:object_r:var_t:s0
+
+    Add Sulka Configuration    SULKA_HARDEN_FSTAB="0"
+    Clean Sulka Recipe    base-files    ${FULL_CONFIG}
+    Build Sulka Image    ${FULL_CONFIG}
+    ${fstab}=    Read Base Files Fstab
+    Fstab Should Contain Mount    ${fstab}    proc     /proc            proc     defaults
+    Fstab Should Contain Mount    ${fstab}    tmpfs    /run             tmpfs    mode=0755,nodev,nosuid,strictatime
+    Fstab Should Contain Mount    ${fstab}    tmpfs    /var/volatile    tmpfs    defaults,rootcontext=system_u:object_r:var_t:s0
+
+    [Teardown]    Reset Sulka Configuration
+
+*** Keywords ***
+Read Base Files Fstab
+    [Documentation]    Return the contents of the fstab staged by the base-files recipe on the host.
+    ...                The recipe version directory is resolved with a wildcard as it may change.
+    ${versions}=    OperatingSystem.List Directories In Directory    ${TEMP_DIR}/build/tmp/work/qemux86_64-sulka-linux/base-files    absolute=True
+    Length Should Be    ${versions}    1
+    ${fstab}=    OperatingSystem.Get File    ${versions}[0]/packages-split/base-files/etc/fstab
+    RETURN    ${fstab}
+
+Fstab Should Contain Mount
+    [Documentation]    Fail unless ${fstab} contains a line for the given mount point with exactly
+    ...                the expected options. Field separators match arbitrary whitespace and the
+    ...                dump/pass columns are pinned to "0 0".
+    [Arguments]    ${fstab}    ${device}    ${mountpoint}    ${type}    ${options}
+    Should Match Regexp    ${fstab}    (?m)^${device}\\s+${mountpoint}\\s+${type}\\s+${options}\\s+0\\s+0\\s*$

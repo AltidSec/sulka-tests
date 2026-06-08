@@ -86,6 +86,15 @@ Reset Sulka Image
     ${timestamp}=    Get Current Date    result_format=epoch
     ${result}=    Run Process    kas    shell    ${configuration}    -c    bitbake -c cleanall core-image-base    cwd=${TEMP_DIR}    timeout=5m    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
 
+Clean Sulka Recipe
+    [Documentation]    Clear a single recipe's sstate and work output so the next build regenerates it
+    ...                from scratch. Use before inspecting a recipe's staged artifacts to ensure no
+    ...                stale output from a previous build is read back.
+    [Arguments]    ${recipe}    ${configuration}    ${cwd}=${TEMP_DIR}
+    ${timestamp}=    Get Current Date    result_format=epoch
+    ${result}=    Run Process    kas    shell    ${configuration}    -c    bitbake -c cleansstate ${recipe}    cwd=${cwd}    timeout=5m    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
+    Should Be Equal As Integers    ${result.rc}    0    Failed to clean ${recipe}
+
 Launch Image With QEMU
     [Documentation]    Start QEMU under kas; block until SSH is reachable or ${ssh_ready_timeout} elapses.
     [Arguments]    ${configuration}    ${ssh_ready_timeout}=5min
