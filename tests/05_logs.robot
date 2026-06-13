@@ -51,6 +51,7 @@ Check Logs For Errors And Warnings
 
     @{allowed}=    Create List
     ...    .*ACPI: _OSC evaluation for CPUs failed, trying _PDC
+    ...    .*tsc: Fast TSC calibration failed
     ${output}=    Write Sudo SSH    sudo dmesg | grep -iE 'warn|error|fail'    ${SULKA_SERVICEUSER_OLD_PASSWORD}
     Validate Output Against Allowlist    ${output.strip()}    ${allowed}    warn/error lines in dmesg
 
