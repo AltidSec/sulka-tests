@@ -15,4 +15,4 @@ Test Raspberry Pi Build
 
     Remove Directory    workspace-rpi/build    recursive=True
 
-    Build Sulka Image    ${FULL_CONFIG}:kas-sulka-raspberrypi.yml    cwd=workspace-rpi
+    Build Sulka Image    ${FULL_CONFIG}:kas-sulka-raspberrypi.yml:extra_fragments/kas-layers-raspberrypi-development.yml    cwd=workspace-rpi
