@@ -13,6 +13,8 @@ Test Raspberry Pi Build
     [Documentation]    Clone git repo and run kas build
     [Tags]             bitbake    build
 
+    Skip If    'scarthgap' in '''${KAS_SULKA_BRANCH}'''    Raspberry Pi build is not supported on scarthgap
+
     Remove Directory    workspace-rpi/build    recursive=True
 
     Build Sulka Image    ${FULL_CONFIG}:kas-sulka-raspberrypi.yml:extra_fragments/kas-layers-raspberrypi-development.yml    cwd=workspace-rpi
