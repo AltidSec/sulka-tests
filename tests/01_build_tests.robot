@@ -30,7 +30,8 @@ Test Sulka Build
 
     Remove Directory    ${TEMP_DIR}/build    recursive=True
 
-    Build Sulka Image    ${CORE_CONFIG}
+    ${result}=    Build Sulka Image    ${CORE_CONFIG}
+    Build Output Should Have No Unexpected Warnings    ${result}
 
 Test Full Sulka Build
     [Documentation]    Clone git repo and run kas build
@@ -38,7 +39,8 @@ Test Full Sulka Build
 
     Remove Directory    ${TEMP_DIR}/build    recursive=True
 
-    Build Sulka Image    ${FULL_CONFIG}
+    ${result}=    Build Sulka Image    ${FULL_CONFIG}
+    Build Output Should Have No Unexpected Warnings    ${result}
 
 Test Non GPLv3 Sulka Build
     [Documentation]    Ensure that the default build does not contain GPLv3 licensed code

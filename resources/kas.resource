@@ -5,11 +5,16 @@ Library          OperatingSystem
 Library          String
 Library          DateTime
 Library          SSHLibrary
+Resource         validation.resource
 
 *** Variables ***
 ${SULKA_SERVICEUSER_USERNAME}        serviceuser
 ${SULKA_SERVICEUSER_OLD_PASSWORD}    test
 ${SULKA_SERVICEUSER_NEW_PASSWORD}    Sulka-5ecure-Distro
+@{ALLOWED_BUILD_WARNINGS}
+...    WARNING: .* do_fetch: Failed to fetch URL .*, attempting MIRRORS if available
+...    WARNING: .* do_sbom_cve_check: .* Found unpatched CVEs
+...    WARNING: SULKA_DEVELOPMENT_MODE is enabled. This is not recommended for production builds.
 
 *** Keywords ***
 Add Sulka Configuration
@@ -80,6 +85,15 @@ Build Sulka Image
     Sleep    5 Seconds
 
     RETURN    ${result}
+
+Build Output Should Have No Unexpected Warnings
+    [Documentation]    Fail if the kas build in ${result} emitted any bitbake "WARNING:" line that is
+    ...                not matched by a regexp in ${ALLOWED_BUILD_WARNINGS}. Both stdout and stderr are
+    ...                scanned. This can be used to detect non-fatal quality issues.
+    [Arguments]    ${result}
+    ${combined}=    Catenate    SEPARATOR=\n    ${result.stdout}    ${result.stderr}
+    ${warnings}=    Get Lines Matching Regexp    ${combined}    WARNING:    partial_match=True
+    Validate Output Against Allowlist    ${warnings}    ${ALLOWED_BUILD_WARNINGS}    build warnings
 
 Reset Sulka Image
     [Arguments]    ${configuration}
