@@ -23,7 +23,7 @@ Test sudo enable
     Should Contain    ${output.lower()}    serviceuser is not in the sudoers file
     Stop QEMU    ${handle}
 
-    Add Sulka Configuration    SULKA_SERVICEUSER_ENABLE_SUDO="1"
+    Add Sulka Configuration    SULKA_SERVICEUSER_ENABLE_SUDO = "1"
 
     Build Sulka Image    ${FULL_CONFIG}
 
@@ -64,9 +64,9 @@ Test Read-Only Root File System
     Should Be Equal As Strings    ${stdout}    touch: cannot touch '/test_touch': Read-only file system
     Stop QEMU    ${handle}
 
-    Add Sulka Configuration    SULKA_ENABLE_READ_ONLY_ROOTFS="0"
-    Add Sulka Configuration    IMAGE_FSTYPES:append=" ext4"
-    Add Sulka Configuration    QB_DEFAULT_FSTYPE="ext4"
+    Add Sulka Configuration    SULKA_ENABLE_READ_ONLY_ROOTFS = "0"
+    Add Sulka Configuration    IMAGE_FSTYPES:append = " ext4"
+    Add Sulka Configuration    QB_DEFAULT_FSTYPE = "ext4"
 
     Build Sulka Image    ${FULL_CONFIG}
 
@@ -93,15 +93,15 @@ Test Serviceuser Password Format Check
     [Tags]             configuration
     [Setup]            Add Common Build Configuration
 
-    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\$y\$jCT\$seWjSFPPf4lsQL74hWMWG1$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."
+    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD = "\$y\$jCT\$seWjSFPPf4lsQL74hWMWG1$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."
     ${result}=    Build Sulka Image    ${FULL_CONFIG}    expect_success=False
     Should Contain    ${result.stdout}${result.stderr}    contains unescaped dollar signs
 
     # No need to reset configuration, last assignment takes precedence
-    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD=""
+    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD = ""
     ${result}=    Build Sulka Image    ${FULL_CONFIG}    expect_success=True
 
-    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."
+    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD = "\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."
     ${result}=    Build Sulka Image    ${FULL_CONFIG}    expect_success=True
 
     [Teardown]    Reset Sulka Configuration
@@ -112,7 +112,7 @@ Test fstab Hardening
     [Tags]             configuration
     [Setup]            Add Common Build Configuration
 
-    Add Sulka Configuration    SULKA_HARDEN_FSTAB="1"
+    Add Sulka Configuration    SULKA_HARDEN_FSTAB = "1"
     Clean Sulka Recipe    base-files    ${FULL_CONFIG}
     Build Sulka Image    ${FULL_CONFIG}
     ${fstab}=    Read Base Files Fstab
@@ -120,7 +120,7 @@ Test fstab Hardening
     Fstab Should Contain Mount    ${fstab}    tmpfs    /run             tmpfs    mode=0755,nodev,nosuid,noexec,strictatime
     Fstab Should Contain Mount    ${fstab}    tmpfs    /var/volatile    tmpfs    nodev,nosuid,noexec,rootcontext=system_u:object_r:var_t:s0
 
-    Add Sulka Configuration    SULKA_HARDEN_FSTAB="0"
+    Add Sulka Configuration    SULKA_HARDEN_FSTAB = "0"
     Clean Sulka Recipe    base-files    ${FULL_CONFIG}
     Build Sulka Image    ${FULL_CONFIG}
     ${fstab}=    Read Base Files Fstab

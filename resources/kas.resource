@@ -35,17 +35,18 @@ Add Common Build Configuration
     [Arguments]    ${cwd}=${TEMP_DIR}
     ${use_global_dl}=    Get Variable Value    ${ENABLE_GLOBAL_DL_DIR}    0
     IF    '${use_global_dl}' == '1'
-        Add Sulka Configuration    DL_DIR="/oe/downloads"    cwd=${cwd}
+        Add Sulka Configuration    DL_DIR = "/oe/downloads"    cwd=${cwd}
     ELSE
-        Add Sulka Configuration    DL_DIR="${CURDIR}/../downloads"    cwd=${cwd}
+        Add Sulka Configuration    DL_DIR = "${CURDIR}/../downloads"    cwd=${cwd}
     END
 
     ${use_global_sstate}=    Get Variable Value    ${ENABLE_GLOBAL_SSTATE_DIR}    0
     IF    '${use_global_sstate}' == '1'
-        Add Sulka Configuration    SSTATE_DIR="/oe/sstate-cache"    cwd=${cwd}
+        Add Sulka Configuration    SSTATE_DIR = "/oe/sstate-cache"    cwd=${cwd}
     ELSE
-        Add Sulka Configuration    SSTATE_DIR="${CURDIR}/../sstate-cache"    cwd=${cwd}
+        Add Sulka Configuration    SSTATE_DIR = "${CURDIR}/../sstate-cache"    cwd=${cwd}
     END
+    Add Sulka Configuration    BB_HASHSERVE_DB_DIR = "\${SSTATE_DIR}"    cwd=${cwd}
 
     ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
     IF    '${global_config}' == ''    RETURN
@@ -62,11 +63,11 @@ Add Common User Configuration
     ...                SULKA_SERVICEUSER_ENABLE_SUDO="1". Pass enable_sudo=${False} to omit the sudo
     ...                line for tests that verify sudo is disabled by default.
     [Arguments]    ${cwd}=${TEMP_DIR}    ${enable_sudo}=${True}
-    Add Sulka Configuration    SULKA_INSTALL_SSH_KEYS="1"    cwd=${cwd}
-    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD="\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."    cwd=${cwd}
-    Add Sulka Configuration    SULKA_SSH_KEYS_DIR="${CURDIR}/../auth-keys/"    cwd=${cwd}
+    Add Sulka Configuration    SULKA_INSTALL_SSH_KEYS = "1"    cwd=${cwd}
+    Add Sulka Configuration    SULKA_SERVICEUSER_PASSWORD = "\\\$y\\\$jCT\\\$seWjSFPPf4lsQL74hWMWG1\\\$eGCxO7c/4jDlHQnYtGRd8yDLyDNqIDt8A5Tv43elk0."    cwd=${cwd}
+    Add Sulka Configuration    SULKA_SSH_KEYS_DIR = "${CURDIR}/../auth-keys/"    cwd=${cwd}
     IF    ${enable_sudo}
-        Add Sulka Configuration    SULKA_SERVICEUSER_ENABLE_SUDO="1"    cwd=${cwd}
+        Add Sulka Configuration    SULKA_SERVICEUSER_ENABLE_SUDO = "1"    cwd=${cwd}
     END
 
 Build Sulka Image
