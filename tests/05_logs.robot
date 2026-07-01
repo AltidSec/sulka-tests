@@ -20,6 +20,7 @@ Check Logs For Errors And Warnings
     IF    'INIT_MANAGER="sysvinit"' in $global_config
         @{allowed}=    Create List
         ...    .*ACPI: _OSC evaluation for CPUs failed, trying _PDC
+        ...    .*tsc: Fast TSC calibration failed
         ${output}=    Write Sudo SSH    sudo grep -iE 'warn|error|fail' /var/log/syslog    ${SULKA_SERVICEUSER_OLD_PASSWORD}
         Validate Output Against Allowlist    ${output.strip()}    ${allowed}    warn/error lines in /var/log/messages
     ELSE
