@@ -14,7 +14,9 @@ ${SULKA_SERVICEUSER_NEW_PASSWORD}    Sulka-5ecure-Distro
 @{ALLOWED_BUILD_WARNINGS}
 ...    WARNING: .* do_fetch: Failed to fetch URL .*, attempting MIRRORS if available
 ...    WARNING: .* do_sbom_cve_check: .* Found unpatched CVEs
+...    WARNING: .* do_cve_check: Found unpatched CVE
 ...    WARNING: SULKA_DEVELOPMENT_MODE is enabled. This is not recommended for production builds.
+...    WARNING: .* CVE_CHECK_IGNORE is deprecated in favor of CVE_STATUS
 
 *** Keywords ***
 Add Sulka Configuration
