@@ -39,6 +39,7 @@ Check Logs For Errors And Warnings
         @{allowed}=    Create List
         ...    .*tsc: Unable to calibrate against PIT
         ...    .*mtrr: your CPUs had inconsistent (fixed MTRR|variable MTRR|MTRRdefType) settings
+        ...    .*hrtimer: interrupt took .* ns
         ...    .*systemd-sysctl.*Couldn't write '[0-9]+' to '(kernel\/sysrq|kernel\/core_uses_pid)', ignoring: No such file or directory
         ...    .*kauditd_printk_skb: [0-9]+ callbacks suppressed
         ...    .*nftables input dropped: IN=(enp0s2|eth0) OUT= MAC=.* SRC=.* DST=.* PROTO=(UDP|ICMPv6) .*
