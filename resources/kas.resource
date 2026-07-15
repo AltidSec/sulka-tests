@@ -11,6 +11,7 @@ Resource         validation.resource
 ${SULKA_SERVICEUSER_USERNAME}        serviceuser
 ${SULKA_SERVICEUSER_OLD_PASSWORD}    test
 ${SULKA_SERVICEUSER_NEW_PASSWORD}    Sulka-5ecure-Distro
+${MODSIGN_CA_PASSPHRASE}             1234
 @{ALLOWED_BUILD_WARNINGS}
 ...    WARNING: .* do_fetch: Failed to fetch URL .*, attempting MIRRORS if available
 ...    WARNING: .* do_sbom_cve_check: .* Found unpatched CVEs
@@ -27,11 +28,29 @@ Reset Sulka Configuration
     [Arguments]    ${cwd}=${TEMP_DIR}
     Run Process    git    checkout    kas-sulka-configuration.yml    cwd=${cwd}
 
+Generate Module Signing Keys
+    [Documentation]    Generate the mandatory IMA/EVM/module-signing keys into ${key_dir} (repo-root
+    ...                modsign-keys by default) with the generator script in the kas-sulka checkout at
+    ...                ${cwd}; idempotent. Run under a pty via `script`, feeding ${MODSIGN_CA_PASSPHRASE}
+    ...                on stdin for the CA prompts (that passphrase is never needed at build time).
+    [Arguments]    ${cwd}=${TEMP_DIR}    ${key_dir}=${CURDIR}/../modsign-keys
+    ${key_dir}=    Normalize Path    ${key_dir}
+    ${exists}=    Run Keyword And Return Status    OperatingSystem.File Should Exist    ${key_dir}/ima-local-ca.pem
+    IF    ${exists}    RETURN
+    Create Directory    ${key_dir}
+    ${script}=    Normalize Path    ${CURDIR}/../${cwd}/scripts/generate_ima_evm_modsign_keys.sh
+    ${passphrase_lines}=    Evaluate    ('${MODSIGN_CA_PASSPHRASE}\\n' * 4)
+    ${result}=    Run Process    printf '%s' "\${PASS}" | script -qec '${script}' /dev/null
+    ...    cwd=${key_dir}    shell=True    env:PASS=${passphrase_lines}
+    Should Be Equal As Integers    ${result.rc}    0    Module signing key generation failed:\n${result.stdout}\n${result.stderr}
+
 Add Common Build Configuration
     [Documentation]    Append the default DL_DIR and SSTATE_DIR entries to the Sulka build config,
     ...                plus any extra entries listed in ${GLOBAL_BUILD_CONFIG}. The DL_DIR and
     ...                SSTATE_DIR paths point to /oe/* when ${ENABLE_GLOBAL_DL_DIR} / ${ENABLE_GLOBAL_SSTATE_DIR}
     ...                are "1" (shared host caches) and to per-checkout paths otherwise.
+    ...                Also sets the mandatory module-signing variables MODSIGN_KEY_DIR / IMA_EVM_ROOT_CA,
+    ...                pointing at the keys created by Generate Module Signing Keys.
     ...                ${GLOBAL_BUILD_CONFIG} is split on whitespace, so values cannot contain
     ...                spaces — e.g. EXTRA_IMAGE_FEATURES="debug-tweaks tools-debug" will split wrong.
     [Arguments]    ${cwd}=${TEMP_DIR}
@@ -49,6 +68,9 @@ Add Common Build Configuration
         Add Sulka Configuration    SSTATE_DIR = "${CURDIR}/../sstate-cache"    cwd=${cwd}
     END
     Add Sulka Configuration    BB_HASHSERVE_DB_DIR = "\${SSTATE_DIR}"    cwd=${cwd}
+
+    Add Sulka Configuration    MODSIGN_KEY_DIR = "${CURDIR}/../modsign-keys"    cwd=${cwd}
+    Add Sulka Configuration    IMA_EVM_ROOT_CA = "\${MODSIGN_KEY_DIR}/ima-local-ca.pem"    cwd=${cwd}
 
     ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
     IF    '${global_config}' == ''    RETURN
@@ -72,11 +94,20 @@ Add Common User Configuration
         Add Sulka Configuration    SULKA_SERVICEUSER_ENABLE_SUDO = "1"    cwd=${cwd}
     END
 
+Checkout Sulka Configuration
+    [Documentation]    Fetch and check out all layer repositories for ${configuration} into ${cwd} via
+    ...                `kas checkout`, without building. Suite Setup runs this with ${FULL_CONFIG} so that
+    ...                meta-security (which Generate Module Signing Keys depends on) is present before the
+    ...                keys are generated; it also primes the layer checkout for every later suite.
+    [Arguments]    ${configuration}    ${cwd}=${TEMP_DIR}
+    ${timestamp}=    Get Current Date    result_format=epoch
+    Run Process    kas    checkout    ${configuration}    cwd=${cwd}    timeout=2h    stdout=kas_stdout_checkout_${timestamp}.log    stderr=kas_stderr_checkout_${timestamp}.log
+
 Build Sulka Image
     [Arguments]    ${configuration}    ${cwd}=${TEMP_DIR}    ${expect_success}=True
     Log    Starting build...
+    Checkout Sulka Configuration    ${configuration}    cwd=${cwd}
     ${timestamp}=    Get Current Date    result_format=epoch
-    ${result}=    Run Process    kas    checkout    ${configuration}    cwd=${cwd}    timeout=2h    stdout=kas_stdout_checkout_${timestamp}.log    stderr=kas_stderr_checkout_${timestamp}.log
     ${result}=    Run Process    kas    build    ${configuration}    cwd=${cwd}    timeout=3h 30m    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
     Log    Return code: ${result.rc}
     IF    ${expect_success}

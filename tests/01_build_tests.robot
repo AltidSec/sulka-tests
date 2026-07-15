@@ -12,8 +12,8 @@ Test Build Environment
     [Documentation]    Check the build env for expected values
     [Tags]             bitbake    build
 
+    Checkout Sulka Configuration    ${CORE_CONFIG}
     ${timestamp}=    Get Current Date    result_format=epoch
-    Run Process    kas    checkout    ${CORE_CONFIG}    cwd=${TEMP_DIR}    timeout=2h    stdout=kas_stdout_checkout_${timestamp}.log    stderr=kas_stderr_checkout_${timestamp}.log
     Run Process    kas    shell    ${CORE_CONFIG}    -c    bitbake -e core-image-base    cwd=${TEMP_DIR}    timeout=3m    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
 
     # Check distro features

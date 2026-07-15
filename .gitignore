@@ -6,4 +6,5 @@ workspace*
 downloads
 sstate-cache
 auth-keys
+modsign-keys
 __pycache__/
