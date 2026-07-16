@@ -8,14 +8,14 @@ Documentation    Version-specific expected values selected by ${KAS_SULKA_BRANCH
 ...    lynis_suggestions_default=Suggestions (14):
 ...    lynis_warnings_default=Great, no warnings
 ...    oscap_fail_count=2
-...    kernel_hardening=[+] Config check is finished: 'OK' - 293 / 'FAIL' - 59
+...    kernel_hardening=[+] Config check is finished: 'OK' - 296 / 'FAIL' - 56
 &{WRYNOSE_EXPECTED}
 ...    lynis_suggestions_sysvinit=Suggestions (17):
 ...    lynis_warnings_sysvinit=Warnings (1):
 ...    lynis_suggestions_default=Suggestions (16):
 ...    lynis_warnings_default=Great, no warnings
 ...    oscap_fail_count=2
-...    kernel_hardening=[+] Config check is finished: 'OK' - 314 / 'FAIL' - 38
+...    kernel_hardening=[+] Config check is finished: 'OK' - 317 / 'FAIL' - 35
 
 *** Keywords ***
 Get Expected Value
