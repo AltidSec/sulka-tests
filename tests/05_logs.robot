@@ -47,6 +47,7 @@ Check Logs For Errors And Warnings
         ...    .*ll header: 00000000: ff ff ff ff ff ff .*
         ...    .*PAM unable to dlopen.*pam_lastlog.*cannot open shared object file: No such file or directory
         ...    .*PAM adding faulty module: /usr/lib/security/pam_lastlog.so
+        ...    .*device-mapper: core: CONFIG_IMA_DISABLE_HTABLE is disabled. Duplicate IMA measurements will not be recorded in the IMA log.
         ${output}=    Write Sudo SSH    sudo journalctl -p warning -b --no-pager -q    ${SULKA_SERVICEUSER_OLD_PASSWORD}
         Validate Output Against Allowlist    ${output.strip()}    ${allowed}    warning+ priority entries in journal
     END
