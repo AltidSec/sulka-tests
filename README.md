@@ -32,13 +32,14 @@ If you want to add global options to the Yocto builds, you can use the `GLOBAL_B
 For example, to use sysvinit as the init manager, add the following:
 
 ```
-GLOBAL_BUILD_CONFIG = "INIT_MANAGER=\"sysvinit\""
+GLOBAL_BUILD_CONFIG = 'INIT_MANAGER = "sysvinit"'
 ```
 
-Multiple options can be added by separating them with spaces:
+Multiple options are separated with `;;.
 
 ```
-GLOBAL_BUILD_CONFIG = "INIT_MANAGER=\"systemd\" TEST_VARIABLE=\"testvalue\""
+GLOBAL_BUILD_CONFIG = 'INIT_MANAGER = "systemd";;TEST_VARIABLE = "testvalue"'
+GLOBAL_BUILD_CONFIG = 'INIT_MANAGER = "systemd" ;; EXTRA_IMAGE_FEATURES = "debug-tweaks tools-debug"'
 ```
 
 ## Writing New Test Suites

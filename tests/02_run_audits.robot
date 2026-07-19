@@ -26,8 +26,8 @@ Run Lynis Scan
 
     ${output}=    Write Sudo SSH   sudo lynis audit system --no-colors    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 
-    ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
-    IF    'INIT_MANAGER="sysvinit"' in $global_config
+    ${sysvinit}=    Global Build Configuration Contains    INIT_MANAGER    sysvinit
+    IF    ${sysvinit}
         ${expected_suggestions}=    Get Expected Value    lynis_suggestions_sysvinit
         ${expected_warnings}=    Get Expected Value    lynis_warnings_sysvinit
     ELSE

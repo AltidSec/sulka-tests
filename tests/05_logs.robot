@@ -16,8 +16,8 @@ Check Logs For Errors And Warnings
 
     Open Default SSH Connection
 
-    ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
-    IF    'INIT_MANAGER="sysvinit"' in $global_config
+    ${sysvinit}=    Global Build Configuration Contains    INIT_MANAGER    sysvinit
+    IF    ${sysvinit}
         @{allowed}=    Create List
         ...    .*ACPI: _OSC evaluation for CPUs failed, trying _PDC
         ...    .*tsc: Fast TSC calibration failed

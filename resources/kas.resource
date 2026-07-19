@@ -12,6 +12,7 @@ ${SULKA_SERVICEUSER_USERNAME}        serviceuser
 ${SULKA_SERVICEUSER_OLD_PASSWORD}    test
 ${SULKA_SERVICEUSER_NEW_PASSWORD}    Sulka-5ecure-Distro
 ${MODSIGN_CA_PASSPHRASE}             1234
+${GLOBAL_BUILD_CONFIG_DELIMITER}     ;;
 @{ALLOWED_BUILD_WARNINGS}
 ...    WARNING: .* do_fetch: Failed to fetch URL .*, attempting MIRRORS if available
 ...    WARNING: .* do_sbom_cve_check: .* Found unpatched CVEs
@@ -45,6 +46,30 @@ Generate Module Signing Keys
     ...    cwd=${key_dir}    shell=True    env:PASS=${passphrase_lines}
     Should Be Equal As Integers    ${result.rc}    0    Module signing key generation failed:\n${result.stdout}\n${result.stderr}
 
+Get Global Build Configuration Entries
+    [Documentation]    Return ${GLOBAL_BUILD_CONFIG} as a list of local.conf entries. Entries are
+    ...                separated by ${GLOBAL_BUILD_CONFIG_DELIMITER}
+    ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
+    @{items}=    Split String    ${global_config}    ${GLOBAL_BUILD_CONFIG_DELIMITER}
+    @{entries}=    Create List
+    FOR    ${item}    IN    @{items}
+        ${entry}=    Strip String    ${item}
+        IF    $entry != ''    Append To List    ${entries}    ${entry}
+    END
+    RETURN    @{entries}
+
+Global Build Configuration Contains
+    [Documentation]    Return True when ${GLOBAL_BUILD_CONFIG} assigns ${value} to ${variable}.
+    [Arguments]    ${variable}    ${value}
+    ${pattern}=    Evaluate
+    ...    re.escape($variable) + r'\\s*[?:+.=]+\\s*"?' + re.escape($value) + '"?'    modules=re
+    @{entries}=    Get Global Build Configuration Entries
+    FOR    ${entry}    IN    @{entries}
+        ${match}=    Evaluate    bool(re.fullmatch($pattern, $entry))    modules=re
+        IF    ${match}    RETURN    ${True}
+    END
+    RETURN    ${False}
+
 Add Common Build Configuration
     [Documentation]    Append the default DL_DIR and SSTATE_DIR entries to the Sulka build config,
     ...                plus any extra entries listed in ${GLOBAL_BUILD_CONFIG}. The DL_DIR and
@@ -52,8 +77,8 @@ Add Common Build Configuration
     ...                are "1" (shared host caches) and to per-checkout paths otherwise.
     ...                Also sets the mandatory module-signing variables MODSIGN_KEY_DIR / IMA_EVM_ROOT_CA,
     ...                pointing at the keys created by Generate Module Signing Keys.
-    ...                ${GLOBAL_BUILD_CONFIG} is split on whitespace, so values cannot contain
-    ...                spaces — e.g. EXTRA_IMAGE_FEATURES="debug-tweaks tools-debug" will split wrong.
+    ...                ${GLOBAL_BUILD_CONFIG} entries are separated by ${GLOBAL_BUILD_CONFIG_DELIMITER};
+    ...                see Get Global Build Configuration Entries.
     [Arguments]    ${cwd}=${TEMP_DIR}
     ${use_global_dl}=    Get Variable Value    ${ENABLE_GLOBAL_DL_DIR}    0
     IF    '${use_global_dl}' == '1'
@@ -73,10 +98,7 @@ Add Common Build Configuration
     Add Sulka Configuration    MODSIGN_KEY_DIR = "${CURDIR}/../modsign-keys"    cwd=${cwd}
     Add Sulka Configuration    IMA_EVM_ROOT_CA = "\${MODSIGN_KEY_DIR}/ima-local-ca.pem"    cwd=${cwd}
 
-    ${global_config}=    Get Variable Value    ${GLOBAL_BUILD_CONFIG}    ${EMPTY}
-    IF    '${global_config}' == ''    RETURN
-
-    @{config_items}=    Split String    ${global_config}
+    @{config_items}=    Get Global Build Configuration Entries
     FOR    ${item}    IN    @{config_items}
         Add Sulka Configuration    ${item}    cwd=${cwd}
     END
