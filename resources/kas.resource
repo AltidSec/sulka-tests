@@ -18,6 +18,7 @@ ${MODSIGN_CA_PASSPHRASE}             1234
 ...    WARNING: .* do_cve_check: Found unpatched CVE
 ...    WARNING: SULKA_DEVELOPMENT_MODE is enabled. This is not recommended for production builds.
 ...    WARNING: .* CVE_CHECK_IGNORE is deprecated in favor of CVE_STATUS
+...    WARNING: linux-yocto-6.6.142.*git-r.* do_kernel_configcheck: .*: This BSP contains fragments with warnings:
 
 *** Keywords ***
 Add Sulka Configuration
