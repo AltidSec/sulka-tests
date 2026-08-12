@@ -106,27 +106,38 @@ Test Serviceuser Password Format Check
 
     [Teardown]    Reset Sulka Configuration
 
-Test fstab Hardening
-    [Documentation]    Test the SULKA_HARDEN_FSTAB configuration by inspecting the base-files fstab
-    ...                staged on the host, without booting QEMU.
+Test Mount Hardening
+    [Documentation]    Test the SULKA_HARDEN_MOUNTS configuration by inspecting the base-files fstab
+    ...                staged on the host and systemd's tmp.mount unit in the built image root file
+    ...                system, without booting QEMU.
     [Tags]             configuration
     [Setup]            Add Common Build Configuration
 
-    Add Sulka Configuration    SULKA_HARDEN_FSTAB = "1"
+    # /tmp is a mount of its own only under systemd, where tmp.mount rather than the fstab carries
+    # its options. On sysvinit /tmp is a symlink into /var/volatile and the fstab checks cover it.
+    ${sysvinit}=    Global Build Configuration Contains    INIT_MANAGER    sysvinit
+
+    Add Sulka Configuration    SULKA_HARDEN_MOUNTS = "1"
     Clean Sulka Recipe    base-files    ${FULL_CONFIG}
     Build Sulka Image    ${FULL_CONFIG}
     ${fstab}=    Read Base Files Fstab
     Fstab Should Contain Mount    ${fstab}    proc     /proc            proc     hidepid=2
     Fstab Should Contain Mount    ${fstab}    tmpfs    /run             tmpfs    mode=0755,nodev,nosuid,noexec,strictatime
     Fstab Should Contain Mount    ${fstab}    tmpfs    /var/volatile    tmpfs    nodev,nosuid,noexec,rootcontext=system_u:object_r:var_t:s0
+    IF    not ${sysvinit}
+        Tmp Mount Should Have Options    mode=1777,strictatime,nosuid,nodev,noexec,size=50%%,nr_inodes=1m,x-systemd.graceful-option=usrquota
+    END
 
-    Add Sulka Configuration    SULKA_HARDEN_FSTAB = "0"
+    Add Sulka Configuration    SULKA_HARDEN_MOUNTS = "0"
     Clean Sulka Recipe    base-files    ${FULL_CONFIG}
     Build Sulka Image    ${FULL_CONFIG}
     ${fstab}=    Read Base Files Fstab
     Fstab Should Contain Mount    ${fstab}    proc     /proc            proc     defaults
     Fstab Should Contain Mount    ${fstab}    tmpfs    /run             tmpfs    mode=0755,nodev,nosuid,strictatime
     Fstab Should Contain Mount    ${fstab}    tmpfs    /var/volatile    tmpfs    defaults,rootcontext=system_u:object_r:var_t:s0
+    IF    not ${sysvinit}
+        Tmp Mount Should Have Options    mode=1777,strictatime,nosuid,nodev,size=50%%,nr_inodes=1m,x-systemd.graceful-option=usrquota
+    END
 
     [Teardown]    Reset Sulka Configuration
 
@@ -145,3 +156,12 @@ Fstab Should Contain Mount
     ...                dump/pass columns are pinned to "0 0".
     [Arguments]    ${fstab}    ${device}    ${mountpoint}    ${type}    ${options}
     Should Match Regexp    ${fstab}    (?m)^${device}\\s+${mountpoint}\\s+${type}\\s+${options}\\s+0\\s+0\\s*$
+
+Tmp Mount Should Have Options
+    [Documentation]    Fail unless systemd's tmp.mount unit in the image root file system built on the
+    ...                host has exactly the expected options.
+    [Arguments]    ${options}
+    ${versions}=    OperatingSystem.List Directories In Directory    ${TEMP_DIR}/build/tmp/work/qemux86_64-sulka-linux/core-image-base    absolute=True
+    Length Should Be    ${versions}    1
+    ${unit}=    OperatingSystem.Get File    ${versions}[0]/rootfs/usr/lib/systemd/system/tmp.mount
+    Should Contain    ${unit}    \nOptions=${options}\n    Unexpected mount options in tmp.mount
