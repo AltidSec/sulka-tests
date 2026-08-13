@@ -9,6 +9,8 @@ Documentation    Version-specific expected values selected by ${KAS_SULKA_BRANCH
 ...    lynis_warnings_default=Great, no warnings
 ...    oscap_fail_count=2
 ...    kernel_hardening=[+] Config check is finished: 'OK' - 296 / 'FAIL' - 56
+...    tmp_mount_options_hardened=mode=1777,strictatime,nosuid,nodev,noexec,size=50%%,nr_inodes=1m
+...    tmp_mount_options_default=mode=1777,strictatime,nosuid,nodev,size=50%%,nr_inodes=1m
 &{WRYNOSE_EXPECTED}
 ...    lynis_suggestions_sysvinit=Suggestions (17):
 ...    lynis_warnings_sysvinit=Warnings (1):
@@ -16,6 +18,8 @@ Documentation    Version-specific expected values selected by ${KAS_SULKA_BRANCH
 ...    lynis_warnings_default=Great, no warnings
 ...    oscap_fail_count=2
 ...    kernel_hardening=[+] Config check is finished: 'OK' - 317 / 'FAIL' - 35
+...    tmp_mount_options_hardened=mode=1777,strictatime,nosuid,nodev,noexec,size=50%%,nr_inodes=1m,x-systemd.graceful-option=usrquota
+...    tmp_mount_options_default=mode=1777,strictatime,nosuid,nodev,size=50%%,nr_inodes=1m,x-systemd.graceful-option=usrquota
 
 *** Keywords ***
 Get Expected Value

@@ -4,6 +4,7 @@ Library          OperatingSystem
 Resource         ../resources/git.resource
 Resource         ../resources/kas.resource
 Resource         ../resources/ssh.resource
+Resource         ../resources/versions.resource
 Suite Setup       Reset Sulka Image    ${FULL_CONFIG}
 Suite Teardown    Reset Sulka Configuration
 
@@ -125,7 +126,8 @@ Test Mount Hardening
     Fstab Should Contain Mount    ${fstab}    tmpfs    /run             tmpfs    mode=0755,nodev,nosuid,noexec,strictatime
     Fstab Should Contain Mount    ${fstab}    tmpfs    /var/volatile    tmpfs    nodev,nosuid,noexec,rootcontext=system_u:object_r:var_t:s0
     IF    not ${sysvinit}
-        Tmp Mount Should Have Options    mode=1777,strictatime,nosuid,nodev,noexec,size=50%%,nr_inodes=1m,x-systemd.graceful-option=usrquota
+        ${options}=    Get Expected Value    tmp_mount_options_hardened
+        Tmp Mount Should Have Options    ${options}
     END
 
     Add Sulka Configuration    SULKA_HARDEN_MOUNTS = "0"
@@ -136,7 +138,8 @@ Test Mount Hardening
     Fstab Should Contain Mount    ${fstab}    tmpfs    /run             tmpfs    mode=0755,nodev,nosuid,strictatime
     Fstab Should Contain Mount    ${fstab}    tmpfs    /var/volatile    tmpfs    defaults,rootcontext=system_u:object_r:var_t:s0
     IF    not ${sysvinit}
-        Tmp Mount Should Have Options    mode=1777,strictatime,nosuid,nodev,size=50%%,nr_inodes=1m,x-systemd.graceful-option=usrquota
+        ${options}=    Get Expected Value    tmp_mount_options_default
+        Tmp Mount Should Have Options    ${options}
     END
 
     [Teardown]    Reset Sulka Configuration
