@@ -33,17 +33,18 @@ Reset Sulka Configuration
 Generate Module Signing Keys
     [Documentation]    Generate the mandatory IMA/EVM/module-signing keys into ${key_dir} (repo-root
     ...                modsign-keys by default) with the generator script in the kas-sulka checkout at
-    ...                ${cwd}; idempotent. Run under a pty via `script`, feeding ${MODSIGN_CA_PASSPHRASE}
-    ...                on stdin for the CA prompts (that passphrase is never needed at build time).
+    ...                ${cwd}; idempotent. Run under a pty via `script`, feeding Y on stdin for the
+    ...                script's confirmation prompt, followed by ${MODSIGN_CA_PASSPHRASE} for the CA
+    ...                prompts (that passphrase is never needed at build time).
     [Arguments]    ${cwd}=${TEMP_DIR}    ${key_dir}=${CURDIR}/../modsign-keys
     ${key_dir}=    Normalize Path    ${key_dir}
     ${exists}=    Run Keyword And Return Status    OperatingSystem.File Should Exist    ${key_dir}/ima-local-ca.pem
     IF    ${exists}    RETURN
     Create Directory    ${key_dir}
     ${script}=    Normalize Path    ${CURDIR}/../${cwd}/scripts/generate_ima_evm_modsign_keys.sh
-    ${passphrase_lines}=    Evaluate    ('${MODSIGN_CA_PASSPHRASE}\\n' * 4)
+    ${script_input}=    Evaluate    'Y\\n' + ('${MODSIGN_CA_PASSPHRASE}\\n' * 4)
     ${result}=    Run Process    printf '%s' "\${PASS}" | script -qec '${script}' /dev/null
-    ...    cwd=${key_dir}    shell=True    env:PASS=${passphrase_lines}
+    ...    cwd=${key_dir}    shell=True    env:PASS=${script_input}
     Should Be Equal As Integers    ${result.rc}    0    Module signing key generation failed:\n${result.stdout}\n${result.stderr}
 
 Get Global Build Configuration Entries
