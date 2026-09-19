@@ -158,6 +158,17 @@ Reset Sulka Image
     ${timestamp}=    Get Current Date    result_format=epoch
     ${result}=    Run Process    kas    shell    ${configuration}    -c    bitbake -c cleanall core-image-base    cwd=${TEMP_DIR}    timeout=5m    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
 
+Get Bitbake Variable
+    [Documentation]    Return the expanded value bitbake gives ${variable}, evaluated in the context of
+    ...                ${recipe} when one is given.
+    [Arguments]    ${variable}    ${configuration}    ${recipe}=${EMPTY}    ${cwd}=${TEMP_DIR}
+    ${recipe_option}=    Set Variable If    '${recipe}' == '${EMPTY}'    ${EMPTY}    -r ${recipe}${SPACE}
+    ${result}=    Run Process    kas    shell    ${configuration}    -c    bitbake-getvar --value ${recipe_option} ${variable}    cwd=${cwd}    timeout=15m
+    Should Be Equal As Integers    ${result.rc}    0    Failed to read ${variable} from bitbake:\n${result.stderr}
+    ${value}=    Strip String    ${result.stdout}
+    Should Not Be Empty    ${value}    Bitbake returned no value for ${variable}
+    RETURN    ${value}
+
 Clean Sulka Recipe
     [Documentation]    Clear a single recipe's sstate and work output so the next build regenerates it
     ...                from scratch. Use before inspecting a recipe's staged artifacts to ensure no

@@ -118,40 +118,54 @@ Test Mount Hardening
     # its options. On sysvinit /tmp is a symlink into /var/volatile and the fstab checks cover it.
     ${sysvinit}=    Global Build Configuration Contains    INIT_MANAGER    sysvinit
 
+    ${fstab_file}=    Get Base Files Fstab Path    ${FULL_CONFIG}
+    IF    not ${sysvinit}
+        ${tmp_mount_file}=    Get Tmp Mount Unit Path    ${FULL_CONFIG}
+    END
+
     Add Sulka Configuration    SULKA_HARDEN_MOUNTS = "1"
     Clean Sulka Recipe    base-files    ${FULL_CONFIG}
     Build Sulka Image    ${FULL_CONFIG}
-    ${fstab}=    Read Base Files Fstab
+    ${fstab}=    OperatingSystem.Get File    ${fstab_file}
     Fstab Should Contain Mount    ${fstab}    proc     /proc            proc     hidepid=2
     Fstab Should Contain Mount    ${fstab}    tmpfs    /run             tmpfs    mode=0755,nodev,nosuid,noexec,strictatime
     Fstab Should Contain Mount    ${fstab}    tmpfs    /var/volatile    tmpfs    nodev,nosuid,noexec,rootcontext=system_u:object_r:var_t:s0
     IF    not ${sysvinit}
         ${options}=    Get Expected Value    tmp_mount_options_hardened
-        Tmp Mount Should Have Options    ${options}
+        Tmp Mount Should Have Options    ${tmp_mount_file}    ${options}
     END
 
     Add Sulka Configuration    SULKA_HARDEN_MOUNTS = "0"
     Clean Sulka Recipe    base-files    ${FULL_CONFIG}
     Build Sulka Image    ${FULL_CONFIG}
-    ${fstab}=    Read Base Files Fstab
+    ${fstab}=    OperatingSystem.Get File    ${fstab_file}
     Fstab Should Contain Mount    ${fstab}    proc     /proc            proc     defaults
     Fstab Should Contain Mount    ${fstab}    tmpfs    /run             tmpfs    mode=0755,nodev,nosuid,strictatime
     Fstab Should Contain Mount    ${fstab}    tmpfs    /var/volatile    tmpfs    defaults,rootcontext=system_u:object_r:var_t:s0
     IF    not ${sysvinit}
         ${options}=    Get Expected Value    tmp_mount_options_default
-        Tmp Mount Should Have Options    ${options}
+        Tmp Mount Should Have Options    ${tmp_mount_file}    ${options}
     END
 
     [Teardown]    Reset Sulka Configuration
 
 *** Keywords ***
-Read Base Files Fstab
-    [Documentation]    Return the contents of the fstab staged by the base-files recipe on the host.
-    ...                The recipe version directory is resolved with a wildcard as it may change.
-    ${versions}=    OperatingSystem.List Directories In Directory    ${TEMP_DIR}/build/tmp/work/qemux86_64-sulka-linux/base-files    absolute=True
-    Length Should Be    ${versions}    1
-    ${fstab}=    OperatingSystem.Get File    ${versions}[0]/packages-split/base-files/etc/fstab
-    RETURN    ${fstab}
+Get Base Files Fstab Path
+    [Documentation]    Return the path of the fstab staged by the base-files recipe on the host. The
+    ...                staging directory carries the machine, distro and recipe version in its name, so
+    ...                it is read from bitbake rather than spelled out here.
+    [Arguments]    ${configuration}
+    ${pkgdest}=    Get Bitbake Variable    PKGDEST    ${configuration}    recipe=base-files
+    RETURN    ${pkgdest}/base-files/etc/fstab
+
+Get Tmp Mount Unit Path
+    [Documentation]    Return the path of systemd's tmp.mount unit in the image root file system built
+    ...                on the host. Both the root file system location and the unit directory are read
+    ...                from bitbake, as they depend on the machine, distro and image in use.
+    [Arguments]    ${configuration}
+    ${rootfs}=    Get Bitbake Variable    IMAGE_ROOTFS    ${configuration}    recipe=core-image-base
+    ${unitdir}=    Get Bitbake Variable    systemd_system_unitdir    ${configuration}    recipe=core-image-base
+    RETURN    ${rootfs}${unitdir}/tmp.mount
 
 Fstab Should Contain Mount
     [Documentation]    Fail unless ${fstab} contains a line for the given mount point with exactly
@@ -161,10 +175,8 @@ Fstab Should Contain Mount
     Should Match Regexp    ${fstab}    (?m)^${device}\\s+${mountpoint}\\s+${type}\\s+${options}\\s+0\\s+0\\s*$
 
 Tmp Mount Should Have Options
-    [Documentation]    Fail unless systemd's tmp.mount unit in the image root file system built on the
-    ...                host has exactly the expected options.
-    [Arguments]    ${options}
-    ${versions}=    OperatingSystem.List Directories In Directory    ${TEMP_DIR}/build/tmp/work/qemux86_64-sulka-linux/core-image-base    absolute=True
-    Length Should Be    ${versions}    1
-    ${unit}=    OperatingSystem.Get File    ${versions}[0]/rootfs/usr/lib/systemd/system/tmp.mount
+    [Documentation]    Fail unless the systemd tmp.mount unit at ${path} has exactly the expected
+    ...                options.
+    [Arguments]    ${path}    ${options}
+    ${unit}=    OperatingSystem.Get File    ${path}
     Should Contain    ${unit}    \nOptions=${options}\n    Unexpected mount options in tmp.mount
