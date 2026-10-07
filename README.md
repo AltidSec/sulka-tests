@@ -17,6 +17,14 @@ Note that the tests run against the development meta-layers by default. This is 
 sed -i 's#:extra_fragments/kas-layers-development.yml##g' global_variables.py
 ```
 
+## Running The Tests On qemuarm64
+
+The tests build and boot `qemux86-64` by default. To run them on `qemuarm64`, use `qemuarm64_variables.py` as the variable file. It reads `global_variables.py`, so local additions to it apply on both machines.
+
+```
+robot --variablefile qemuarm64_variables.py tests
+```
+
 ## Running Individual Tests And Suites
 
 Always point Robot at the `tests` directory and select what to run with `--suite`, `--test`, or `--include`. The `tests/__init__.robot` Suite Setup clones the shared `kas-sulka` workspace, and that init only runs when the directory is the target — passing a file path directly skips the clone.

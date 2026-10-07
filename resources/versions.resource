@@ -23,7 +23,9 @@ Documentation    Version-specific expected values selected by ${KAS_SULKA_BRANCH
 
 *** Keywords ***
 Get Expected Value
-    [Documentation]    Return the ${key} expected value for the current ${KAS_SULKA_BRANCH}.
+    [Documentation]    Return the ${key} expected value for the current ${KAS_SULKA_BRANCH}. A value
+    ...                given as ${key}_${MACHINE} takes precedence, for values that differ between the
+    ...                machines.
     [Arguments]    ${key}
     ${branch}=    Get Variable Value    ${KAS_SULKA_BRANCH}    ${EMPTY}
     IF    'scarthgap' in '${branch}'
@@ -33,4 +35,6 @@ Get Expected Value
     ELSE
         Fail    No version-specific expected values defined for KAS_SULKA_BRANCH '${branch}'
     END
-    RETURN    ${values}[${key}]
+    ${machine}=    Get Variable Value    ${MACHINE}    ${EMPTY}
+    ${value}=    Evaluate    $values[$key + '_' + $machine] if $key + '_' + $machine in $values else $values[$key]
+    RETURN    ${value}

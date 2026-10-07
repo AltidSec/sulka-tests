@@ -6,7 +6,7 @@ Library          SSHLibrary
 Open Default SSH Connection
     [Arguments]    ${timeout}=1m
     Open Connection    127.0.0.1    port=2222
-    Set Client Configuration    prompt=${SULKA_SERVICEUSER_USERNAME}@qemux86-64:~$
+    Set Client Configuration    prompt=${SULKA_SERVICEUSER_USERNAME}@${MACHINE}:~$
     Set Client Configuration    timeout=${timeout}
     Login With Public Key    username=${SULKA_SERVICEUSER_USERNAME}    keyfile=./auth-keys/ssh_auth_ed25519_key
 
