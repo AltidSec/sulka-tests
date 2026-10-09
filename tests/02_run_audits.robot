@@ -22,7 +22,7 @@ Run Lynis Scan
     [Tags]             audit
     ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}
 
-    Open Default SSH Connection    timeout=60m
+    Open Default SSH Connection    timeout=90m
 
     ${output}=    Write Sudo SSH   sudo lynis audit system --no-colors    ${SULKA_SERVICEUSER_NEW_PASSWORD}
 

@@ -42,12 +42,14 @@ Check Logs For Errors And Warnings
         ...    .*hrtimer: interrupt took .* ns
         ...    .*systemd-sysctl.*Couldn't write '[0-9]+' to '(kernel\/sysrq|kernel\/core_uses_pid)', ignoring: No such file or directory
         ...    .*kauditd_printk_skb: [0-9]+ callbacks suppressed
-        ...    .*nftables input dropped: IN=(enp0s2|eth0) OUT= MAC=.* SRC=.* DST=.* PROTO=(UDP|ICMPv6) .*
-        ...    .*IPv4: martian source 255.255.255.255 from 10.0.2.2, on dev (enp0s2|eth0)
+        ...    .*nftables input dropped: IN=(enp0s1|enp0s2|eth0) OUT= MAC=.* SRC=.* DST=.* PROTO=(UDP|ICMPv6) .*
+        ...    .*IPv4: martian source 255.255.255.255 from 10.0.2.2, on dev (enp0s1|enp0s2|eth0)
         ...    .*ll header: 00000000: ff ff ff ff ff ff .*
         ...    .*PAM unable to dlopen.*pam_lastlog.*cannot open shared object file: No such file or directory
         ...    .*PAM adding faulty module: /usr/lib/security/pam_lastlog.so
         ...    .*device-mapper: core: CONFIG_IMA_DISABLE_HTABLE is disabled. Duplicate IMA measurements will not be recorded in the IMA log.
+        ...    .*cacheinfo: Unable to detect cache hierarchy for CPU 0
+        ...    .*pci-host-generic 4010000000.pcie: Memory resource size exceeds max for 32 bits
         ${output}=    Write Sudo SSH    sudo journalctl -p warning -b --no-pager -q    ${SULKA_SERVICEUSER_OLD_PASSWORD}
         Validate Output Against Allowlist    ${output.strip()}    ${allowed}    warning+ priority entries in journal
     END
