@@ -21,7 +21,7 @@ Check Logs For Errors And Warnings
         @{allowed}=    Create List
         ...    .*ACPI: _OSC evaluation for CPUs failed, trying _PDC
         ...    .*tsc: Fast TSC calibration failed
-        ${output}=    Write Sudo SSH    sudo grep -iE 'warn|error|fail' /var/log/syslog    ${SULKA_SERVICEUSER_OLD_PASSWORD}
+        ${output}=    Execute Command    grep -iE 'warn|error|fail' /var/log/syslog    sudo=True    sudo_password=${SULKA_SERVICEUSER_OLD_PASSWORD}
         Validate Output Against Allowlist    ${output.strip()}    ${allowed}    warn/error lines in /var/log/messages
     ELSE
         @{allowed}=    Create List
@@ -33,7 +33,7 @@ Check Logs For Errors And Warnings
         ...    .*syslog-ng.*: .*WARNING: Configuration file format is too old, syslog-ng is running in compatibility mode.*
         ...    .*syslog-ng.*: .*WARNING: Your configuration file uses an obsoleted keyword, please update your configuration; keyword='stats_freq'.*
         ...    .*pam_warn.systemd-user:setcred.:.*user=.serviceuser.*
-        ${output}=    Write Sudo SSH    sudo journalctl -b --no-pager -q | grep -iE 'warn|error'    ${SULKA_SERVICEUSER_OLD_PASSWORD}
+        ${output}=    Execute Command    journalctl -b --no-pager -q | grep -iE 'warn|error'    sudo=True    sudo_password=${SULKA_SERVICEUSER_OLD_PASSWORD}
         Validate Output Against Allowlist    ${output.strip()}    ${allowed}    warn/error lines in journal
 
         @{allowed}=    Create List
@@ -50,14 +50,19 @@ Check Logs For Errors And Warnings
         ...    .*device-mapper: core: CONFIG_IMA_DISABLE_HTABLE is disabled. Duplicate IMA measurements will not be recorded in the IMA log.
         ...    .*cacheinfo: Unable to detect cache hierarchy for CPU 0
         ...    .*pci-host-generic 4010000000.pcie: Memory resource size exceeds max for 32 bits
-        ${output}=    Write Sudo SSH    sudo journalctl -p warning -b --no-pager -q    ${SULKA_SERVICEUSER_OLD_PASSWORD}
+        ...    .*kernel: (,| OK|, OK)$
+        Close Connection
+        Open Default SSH Connection
+        ${output}=    Execute Command    journalctl -p warning -b --no-pager -q    sudo=True    sudo_password=${SULKA_SERVICEUSER_OLD_PASSWORD}
         Validate Output Against Allowlist    ${output.strip()}    ${allowed}    warning+ priority entries in journal
     END
 
     @{allowed}=    Create List
     ...    .*ACPI: _OSC evaluation for CPUs failed, trying _PDC
     ...    .*tsc: Fast TSC calibration failed
-    ${output}=    Write Sudo SSH    sudo dmesg | grep -iE 'warn|error|fail'    ${SULKA_SERVICEUSER_OLD_PASSWORD}
+    Close Connection
+    Open Default SSH Connection
+    ${output}=    Execute Command    dmesg | grep -iE 'warn|error|fail'    sudo=True    sudo_password=${SULKA_SERVICEUSER_OLD_PASSWORD}
     Validate Output Against Allowlist    ${output.strip()}    ${allowed}    warn/error lines in dmesg
 
     [Teardown]    Stop QEMU    ${handle}
