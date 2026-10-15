@@ -7,4 +7,5 @@ downloads
 sstate-cache
 auth-keys
 modsign-keys
+fit-keys
 __pycache__/

@@ -47,6 +47,18 @@ Generate Module Signing Keys
     ...    cwd=${key_dir}    shell=True    env:PASS=${script_input}
     Should Be Equal As Integers    ${result.rc}    0    Module signing key generation failed:\n${result.stdout}\n${result.stderr}
 
+Generate FIT Signing Keys
+    [Documentation]    Generate the FIT signing keys of verified boot into ${key_dir} (repo-root
+    ...                fit-keys by default) with the generator script in the kas-sulka checkout at
+    ...                ${cwd}; idempotent. Y is fed on stdin for the script's confirmation prompt.
+    [Arguments]    ${cwd}=${TEMP_DIR}    ${key_dir}=${CURDIR}/../fit-keys
+    ${key_dir}=    Normalize Path    ${key_dir}
+    ${exists}=    Run Keyword And Return Status    OperatingSystem.File Should Exist    ${key_dir}/sulka-fit.key
+    IF    ${exists}    RETURN
+    ${script}=    Normalize Path    ${CURDIR}/../${cwd}/scripts/generate_fit_signing_keys.sh
+    ${result}=    Run Process    printf 'Y\\n' | '${script}' '${key_dir}' sulka-fit    shell=True
+    Should Be Equal As Integers    ${result.rc}    0    FIT signing key generation failed:\n${result.stdout}\n${result.stderr}
+
 Get Global Build Configuration Entries
     [Documentation]    Return ${GLOBAL_BUILD_CONFIG} as a list of local.conf entries. Entries are
     ...                separated by ${GLOBAL_BUILD_CONFIG_DELIMITER}
@@ -77,7 +89,8 @@ Add Common Build Configuration
     ...                SSTATE_DIR paths point to /oe/* when ${ENABLE_GLOBAL_DL_DIR} / ${ENABLE_GLOBAL_SSTATE_DIR}
     ...                are "1" (shared host caches) and to per-checkout paths otherwise.
     ...                Also sets the mandatory module-signing variables MODSIGN_KEY_DIR / IMA_EVM_ROOT_CA,
-    ...                pointing at the keys created by Generate Module Signing Keys.
+    ...                pointing at the keys created by Generate Module Signing Keys, and when
+    ...                ${VERIFIED_BOOT} is "1", the FIT signing keys of verified boot.
     ...                ${GLOBAL_BUILD_CONFIG} entries are separated by ${GLOBAL_BUILD_CONFIG_DELIMITER};
     ...                see Get Global Build Configuration Entries.
     [Arguments]    ${cwd}=${TEMP_DIR}
@@ -98,6 +111,14 @@ Add Common Build Configuration
 
     Add Sulka Configuration    MODSIGN_KEY_DIR = "${CURDIR}/../modsign-keys"    cwd=${cwd}
     Add Sulka Configuration    IMA_EVM_ROOT_CA = "\${MODSIGN_KEY_DIR}/ima-local-ca.pem"    cwd=${cwd}
+
+    # Machines with verified boot, such as qemuarm64, need the FIT signing keys
+    ${verified_boot}=    Get Variable Value    ${VERIFIED_BOOT}    0
+    IF    '${verified_boot}' == '1'
+        Generate FIT Signing Keys    cwd=${cwd}
+        Add Sulka Configuration    UBOOT_SIGN_KEYDIR = "${CURDIR}/../fit-keys"    cwd=${cwd}
+        Add Sulka Configuration    UBOOT_SIGN_KEYNAME = "sulka-fit"    cwd=${cwd}
+    END
 
     @{config_items}=    Get Global Build Configuration Entries
     FOR    ${item}    IN    @{config_items}
@@ -179,11 +200,20 @@ Clean Sulka Recipe
     Should Be Equal As Integers    ${result.rc}    0    Failed to clean ${recipe}
 
 Launch Image With QEMU
-    [Documentation]    Start QEMU under kas; block until SSH is reachable or ${ssh_ready_timeout} elapses.
-    [Arguments]    ${configuration}    ${ssh_ready_timeout}=5min
+    [Documentation]    Start QEMU under kas and, if ${wait_for_ssh} is true, block until SSH is
+    ...                reachable or ${ssh_ready_timeout} elapses. ${runqemu_args} are appended to the
+    ...                runqemu command line, for example the path of the image to boot. The serial
+    ...                console is written to ${console_log} in ${TEMP_DIR}.
+    [Arguments]    ${configuration}    ${ssh_ready_timeout}=5min    ${runqemu_args}=${RUNQEMU_ARGS}
+    ...            ${console_log}=${EMPTY}    ${wait_for_ssh}=${True}
     ${timestamp}=    Get Current Date    result_format=epoch
-    ${handle}=    Start Process    kas    shell    ${configuration}    -c    runqemu nographic slirp qemuparams\=\"-m 1024\"    cwd=${TEMP_DIR}    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
-    Wait Until Keyword Succeeds    ${ssh_ready_timeout}    5s    QEMU SSH Should Accept Login
+    IF    '${console_log}' == '${EMPTY}'
+        ${console_log}=    Set Variable    kas_stdout_${timestamp}.log
+    END
+    ${handle}=    Start Process    kas    shell    ${configuration}    -c    runqemu nographic slirp qemuparams\=\"-m 1024\" ${runqemu_args}    cwd=${TEMP_DIR}    stdout=${console_log}    stderr=kas_stderr_${timestamp}.log
+    IF    ${wait_for_ssh}
+        Wait Until Keyword Succeeds    ${ssh_ready_timeout}    5s    QEMU SSH Should Accept Login
+    END
     RETURN    ${handle}
 
 QEMU SSH Should Accept Login
