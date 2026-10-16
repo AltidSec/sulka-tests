@@ -11,7 +11,7 @@ Suite Teardown    Reset Sulka Configuration     cwd=workspace-rpi
 *** Test Cases ***
 Test Raspberry Pi Build
     [Documentation]    Clone git repo and run kas build
-    [Tags]             bitbake    build
+    [Tags]             bitbake    build    raspberrypi
 
     Skip If    'scarthgap' in '''${KAS_SULKA_BRANCH}'''    Raspberry Pi build is not supported on scarthgap
 
