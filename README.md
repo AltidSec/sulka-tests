@@ -25,7 +25,7 @@ The tests build and boot `qemux86-64` by default. To run them on `qemuarm64`, us
 robot --variablefile qemuarm64_variables.py tests
 ```
 
-`qemuarm64` is the reference machine for verified boot, which is enabled on it, so every image is booted through U-Boot. The tests generate the FIT signing keys into `fit-keys`, next to `modsign-keys`. The verified boot tests in `09_verified_boot.robot` run only on `qemuarm64`, and are skipped on `qemux86-64`. They modify FIT images with `openssl` from the host and with the native tools of the build.
+`qemuarm64` is the reference machine for verified boot, which is enabled on it, so every image is booted through U-Boot. The tests generate the FIT signing keys into `fit-keys`, next to `modsign-keys`. The U-Boot tests in `09_u-boot.robot`, which test verified boot and the U-Boot password, run only on `qemuarm64`, and are skipped on `qemux86-64`. They modify FIT images with `openssl` from the host and with the native tools of the build.
 
 ## Running Individual Tests And Suites
 

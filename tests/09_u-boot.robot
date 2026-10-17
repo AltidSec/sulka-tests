@@ -1,14 +1,15 @@
 *** Settings ***
-Documentation    Test verified boot. U-Boot must boot the signed FIT image and refuse FIT images
-...              that are modified, signed with another key or not signed. qemuarm64 is the
-...              reference machine for verified boot, so the suite runs only with
-...              qemuarm64_variables.py.
+Documentation    Test U-Boot. With verified boot, U-Boot must boot the signed FIT image and refuse
+...              FIT images that are modified, signed with another key or not signed. The command
+...              line interface must open only with the correct password. qemuarm64 is the
+...              reference machine for verified boot and the only machine the tests boot with
+...              U-Boot, so the suite runs only with qemuarm64_variables.py.
 Library          OperatingSystem
 Library          Process
 Resource         ../resources/kas.resource
 Resource         ../resources/ssh.resource
 Suite Setup      Run Keywords
-...    Skip If    '${MACHINE}' != 'qemuarm64'    Verified boot is tested only on qemuarm64
+...    Skip If    '${MACHINE}' != 'qemuarm64'    U-Boot is tested only on qemuarm64
 ...    AND    Add Common Build Configuration
 ...    AND    Add Common User Configuration
 ...    AND    Build Sulka Image    ${FULL_CONFIG}
@@ -17,6 +18,7 @@ Suite Teardown    Reset Sulka Configuration
 
 *** Variables ***
 ${REJECT_TIMEOUT}          3min
+${AUTOBOOT_TIMEOUT}        3min
 # The modified images the tests create into ${MODIFIED_IMAGE_DIR}
 @{MODIFIED_IMAGES}         modified    other-key    unsigned
 
@@ -64,6 +66,41 @@ Test Unsigned FIT Image Is Rejected
     ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}    runqemu_args=${MACHINE} snapshot ${disk}
     ...    console_log=verified_boot_unsigned.log    wait_for_ssh=${False}
     Boot Should Be Rejected    verified_boot_unsigned.log    Failed to verify required signature 'key-sulka-fit'
+    [Teardown]    Stop QEMU    ${handle}
+
+Test Correct U-Boot Password Opens The Command Line Interface
+    [Documentation]    Entering the password stops the autoboot and unlocks the command line
+    ...                interface, where commands can be run.
+    [Tags]             configuration
+    ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}    runqemu_args=snapshot ${DISK_IMAGE}
+    ...    console_log=u_boot_password_correct.log    wait_for_ssh=${False}
+    Enter U-Boot Password    ${handle}    u_boot_password_correct.log    ${SULKA_UBOOT_PASSWORD}
+    Wait Until Keyword Succeeds    ${AUTOBOOT_TIMEOUT}    1s
+    ...    Console Log Should Contain    ${TEMP_DIR}/u_boot_password_correct.log    =>${SPACE}
+    # U-Boot echoes the command with two spaces, and prints the output with one
+    Write To Serial Console    ${handle}    echo sulka${SPACE}${SPACE}unlocked\r
+    Wait Until Keyword Succeeds    30s    1s
+    ...    Console Log Should Contain    ${TEMP_DIR}/u_boot_password_correct.log    sulka unlocked
+    ${console}=    OperatingSystem.Get File    ${TEMP_DIR}/u_boot_password_correct.log
+    Should Not Contain    ${console}    Starting kernel
+    [Teardown]    Stop QEMU    ${handle}
+
+Test Wrong U-Boot Password Is Rejected
+    [Documentation]    U-Boot accepts one attempt. After a wrong password, it continues the autoboot
+    ...                without opening the command line interface.
+    [Tags]             configuration
+    ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}    runqemu_args=snapshot ${DISK_IMAGE}
+    ...    console_log=u_boot_password_wrong.log    wait_for_ssh=${False}
+    Stop U-Boot Autoboot    ${handle}    u_boot_password_wrong.log
+    # U-Boot received the empty line and waits for the password instead of booting
+    Sleep    5s
+    ${console}=    OperatingSystem.Get File    ${TEMP_DIR}/u_boot_password_wrong.log
+    Should Not Contain    ${console}    Starting kernel
+    Write To Serial Console    ${handle}    wrong-password\r
+    Wait Until Keyword Succeeds    ${AUTOBOOT_TIMEOUT}    1s
+    ...    Console Log Should Contain    ${TEMP_DIR}/u_boot_password_wrong.log    Starting kernel
+    ${console}=    OperatingSystem.Get File    ${TEMP_DIR}/u_boot_password_wrong.log
+    Should Not Contain    ${console}    =>${SPACE}
     [Teardown]    Stop QEMU    ${handle}
 
 Test Missing FIT Signing Key Fails The Build
@@ -137,6 +174,23 @@ Boot Should Be Rejected
     ${console}=    OperatingSystem.Get File    ${TEMP_DIR}/${console_log}
     Should Contain    ${console}    ${expected}
     Should Not Contain    ${console}    Starting kernel
+
+Stop U-Boot Autoboot
+    [Documentation]    Wait for the autoboot countdown of U-Boot in ${TEMP_DIR}/${console_log}, and
+    ...                enter an empty line to the serial console of ${handle}. The countdown is one
+    ...                second, and after the empty line U-Boot waits for the password without a
+    ...                timeout.
+    [Arguments]    ${handle}    ${console_log}
+    Wait Until Keyword Succeeds    ${AUTOBOOT_TIMEOUT}    0.1s
+    ...    Console Log Should Contain    ${TEMP_DIR}/${console_log}    Autoboot in
+    Write To Serial Console    ${handle}    \r
+
+Enter U-Boot Password
+    [Documentation]    Stop the autoboot of U-Boot and enter ${password}. U-Boot accepts one
+    ...                attempt.
+    [Arguments]    ${handle}    ${console_log}    ${password}
+    Stop U-Boot Autoboot    ${handle}    ${console_log}
+    Write To Serial Console    ${handle}    ${password}\r
 
 Console Log Should Contain
     [Arguments]    ${path}    ${expected}

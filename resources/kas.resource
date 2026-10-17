@@ -11,6 +11,8 @@ Resource         validation.resource
 ${SULKA_SERVICEUSER_USERNAME}        serviceuser
 ${SULKA_SERVICEUSER_OLD_PASSWORD}    test
 ${SULKA_SERVICEUSER_NEW_PASSWORD}    Sulka-5ecure-Distro
+# The password of the U-Boot command line interface, set with SULKA_UBOOT_PASSWORD
+${SULKA_UBOOT_PASSWORD}              Sulka-U-Boot-Test
 ${MODSIGN_CA_PASSPHRASE}             1234
 ${GLOBAL_BUILD_CONFIG_DELIMITER}     ;;
 @{ALLOWED_BUILD_WARNINGS}
@@ -89,7 +91,8 @@ Add Common Build Configuration
     ...                SSTATE_DIR paths point to /oe/* when ${ENABLE_GLOBAL_DL_DIR} / ${ENABLE_GLOBAL_SSTATE_DIR}
     ...                are "1" (shared host caches) and to per-checkout paths otherwise.
     ...                Also sets the mandatory module-signing variables MODSIGN_KEY_DIR / IMA_EVM_ROOT_CA,
-    ...                pointing at the keys created by Generate Module Signing Keys, and when
+    ...                pointing at the keys created by Generate Module Signing Keys, the U-Boot
+    ...                password ${SULKA_UBOOT_PASSWORD}, and when
     ...                ${VERIFIED_BOOT} is "1", the FIT signing keys of verified boot.
     ...                ${GLOBAL_BUILD_CONFIG} entries are separated by ${GLOBAL_BUILD_CONFIG_DELIMITER};
     ...                see Get Global Build Configuration Entries.
@@ -111,6 +114,9 @@ Add Common Build Configuration
 
     Add Sulka Configuration    MODSIGN_KEY_DIR = "${CURDIR}/../modsign-keys"    cwd=${cwd}
     Add Sulka Configuration    IMA_EVM_ROOT_CA = "\${MODSIGN_KEY_DIR}/ima-local-ca.pem"    cwd=${cwd}
+
+    # The SHA-512 hash of ${SULKA_UBOOT_PASSWORD}, for the machines that build U-Boot
+    Add Sulka Configuration    SULKA_UBOOT_PASSWORD = "\\\$6\\\$rounds=10000\\\$DpFfdU1yKRHznzd8\\\$YFI6RieWnYmiolMTwNp.RObLGdhvAUV3OZXns1QJeo8TEWAqlgO0onGowa37f.a8vmamUhLrYUnrlRMMJsyG00"    cwd=${cwd}
 
     # Machines with verified boot, such as qemuarm64, need the FIT signing keys
     ${verified_boot}=    Get Variable Value    ${VERIFIED_BOOT}    0
@@ -203,18 +209,26 @@ Launch Image With QEMU
     [Documentation]    Start QEMU under kas and, if ${wait_for_ssh} is true, block until SSH is
     ...                reachable or ${ssh_ready_timeout} elapses. ${runqemu_args} are appended to the
     ...                runqemu command line, for example the path of the image to boot. The serial
-    ...                console is written to ${console_log} in ${TEMP_DIR}.
+    ...                console is written to ${console_log} in ${TEMP_DIR}, and its input is a pipe
+    ...                that can be written to with Write To Serial Console.
     [Arguments]    ${configuration}    ${ssh_ready_timeout}=5min    ${runqemu_args}=${RUNQEMU_ARGS}
     ...            ${console_log}=${EMPTY}    ${wait_for_ssh}=${True}
     ${timestamp}=    Get Current Date    result_format=epoch
     IF    '${console_log}' == '${EMPTY}'
         ${console_log}=    Set Variable    kas_stdout_${timestamp}.log
     END
-    ${handle}=    Start Process    kas    shell    ${configuration}    -c    runqemu nographic slirp qemuparams\=\"-m 1024\" ${runqemu_args}    cwd=${TEMP_DIR}    stdout=${console_log}    stderr=kas_stderr_${timestamp}.log
+    ${handle}=    Start Process    kas    shell    ${configuration}    -c    runqemu nographic slirp qemuparams\=\"-m 1024\" ${runqemu_args}    cwd=${TEMP_DIR}    stdin=PIPE    stdout=${console_log}    stderr=kas_stderr_${timestamp}.log
     IF    ${wait_for_ssh}
         Wait Until Keyword Succeeds    ${ssh_ready_timeout}    5s    QEMU SSH Should Accept Login
     END
     RETURN    ${handle}
+
+Write To Serial Console
+    [Documentation]    Write ${text} to the serial console of the QEMU started by Launch Image With
+    ...                QEMU as ${handle}.
+    [Arguments]    ${handle}    ${text}
+    Evaluate    $handle.stdin.write($text.encode())
+    Evaluate    $handle.stdin.flush()
 
 QEMU SSH Should Accept Login
     [Documentation]    Fails unless 127.0.0.1:2222 accepts a key-based login for ${SULKA_SERVICEUSER_USERNAME}.
