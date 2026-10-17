@@ -171,6 +171,14 @@ Build Sulka Image
 
     RETURN    ${result}
 
+Remove Build Directory
+    [Documentation]    Remove the build directory of the kas-sulka checkout at ${cwd}. The bitbake
+    ...                server of the previous build may still be shutting down and removing its
+    ...                files, such as bitbake.sock, so retry when a file disappears during the
+    ...                removal.
+    [Arguments]    ${cwd}=${TEMP_DIR}
+    Wait Until Keyword Succeeds    1min    5s    Remove Directory    ${cwd}/build    recursive=True
+
 Build Output Should Have No Unexpected Warnings
     [Documentation]    Fail if the kas build in ${result} emitted any bitbake "WARNING:" line that is
     ...                not matched by a regexp in ${ALLOWED_BUILD_WARNINGS}. Both stdout and stderr are

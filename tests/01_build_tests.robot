@@ -28,7 +28,7 @@ Test Sulka Build
     [Documentation]    Clone git repo and run kas build
     [Tags]             bitbake    build
 
-    Remove Directory    ${TEMP_DIR}/build    recursive=True
+    Remove Build Directory
 
     ${result}=    Build Sulka Image    ${CORE_CONFIG}
     Build Output Should Have No Unexpected Warnings    ${result}
@@ -37,7 +37,7 @@ Test Full Sulka Build
     [Documentation]    Clone git repo and run kas build
     [Tags]             bitbake    build
 
-    Remove Directory    ${TEMP_DIR}/build    recursive=True
+    Remove Build Directory
 
     ${result}=    Build Sulka Image    ${FULL_CONFIG}
     Build Output Should Have No Unexpected Warnings    ${result}
@@ -46,7 +46,7 @@ Test Non GPLv3 Sulka Build
     [Documentation]    Ensure that the default build does not contain GPLv3 licensed code
     [Tags]             bitbake    build
 
-    Remove Directory    ${TEMP_DIR}/build    recursive=True
+    Remove Build Directory
 
     Add Sulka Configuration    INCOMPATIBLE_LICENSE:pn-core-image-base = "GPL-3.0* LGPL-3.0*"
 
@@ -61,7 +61,7 @@ Test FIRST_BOOT_RELABEL Fails
     [Tags]             bitbake    build
     [Setup]            Add Common Build Configuration
 
-    Remove Directory    ${TEMP_DIR}/build    recursive=True
+    Remove Build Directory
 
     Add Sulka Configuration    FIRST_BOOT_RELABEL = "1"
 

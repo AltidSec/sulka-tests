@@ -15,6 +15,6 @@ Test Raspberry Pi Build
 
     Skip If    'scarthgap' in '''${KAS_SULKA_BRANCH}'''    Raspberry Pi build is not supported on scarthgap
 
-    Remove Directory    workspace-rpi/build    recursive=True
+    Remove Build Directory    cwd=workspace-rpi
 
     Build Sulka Image    ${FULL_CONFIG}:kas-sulka-raspberrypi.yml:extra_fragments/kas-layers-raspberrypi-development.yml    cwd=workspace-rpi
