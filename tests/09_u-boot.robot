@@ -117,12 +117,16 @@ Prepare Verified Boot Tests
     [Documentation]    Set ${DISK_IMAGE} to the disk image the build deployed, ${FIT_IMAGE} to the
     ...                FIT image in it, ${NATIVE_TOOLS} to the PATH of the native tools that modify
     ...                them, and ${MODIFIED_IMAGE_DIR} to the directory of the modified images,
-    ...                without the images of earlier runs.
+    ...                without the images of earlier runs. Build the native tools, as nothing
+    ...                stages them when U-Boot and the FIT image come from the shared state cache.
     ${deploy_dir}=    Get Bitbake Variable    DEPLOY_DIR_IMAGE    ${FULL_CONFIG}    recipe=core-image-base
     ${link_name}=    Get Bitbake Variable    IMAGE_LINK_NAME    ${FULL_CONFIG}    recipe=core-image-base
     ${components_dir}=    Get Bitbake Variable    COMPONENTS_DIR    ${FULL_CONFIG}
     ${build_arch}=    Get Bitbake Variable    BUILD_ARCH    ${FULL_CONFIG}
     ${tools}=    Set Variable    ${components_dir}/${build_arch}
+    ${result}=    Run Process    kas    shell    ${FULL_CONFIG}    -c    bitbake u-boot-tools-native dtc-native mtools-native
+    ...    cwd=${TEMP_DIR}    timeout=30m
+    Should Be Equal As Integers    ${result.rc}    0    Building the native tools failed:\n${result.stderr}
     ${modified_image_dir}=    Normalize Path    ${CURDIR}/../${TEMP_DIR}/build/verified-boot-modified-images
     Set Suite Variable    ${DISK_IMAGE}    ${deploy_dir}/${link_name}.wic
     Set Suite Variable    ${FIT_IMAGE}    ${deploy_dir}/fitImage
