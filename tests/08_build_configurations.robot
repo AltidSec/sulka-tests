@@ -5,6 +5,7 @@ Resource         ../resources/git.resource
 Resource         ../resources/kas.resource
 Resource         ../resources/ssh.resource
 Resource         ../resources/versions.resource
+Library          ../resources/ImageModification.py
 Suite Setup       Reset Sulka Image    ${FULL_CONFIG}
 Suite Teardown    Reset Sulka Configuration
 
@@ -82,6 +83,49 @@ Test Read-Only Root File System
     ${output}=    Write Sudo SSH    sudo touch /test_touch    ${SULKA_SERVICEUSER_OLD_PASSWORD}
     ${output}=    Write Sudo SSH    sudo ls / | grep test_touch    ${SULKA_SERVICEUSER_OLD_PASSWORD}
     Should Not Be Empty   ${output}
+
+    [Teardown]    Run Keywords
+    ...    Reset Sulka Configuration
+    ...    AND    Stop QEMU    ${handle}
+
+Test dm-verity
+    [Documentation]    Test the SULKA_ENABLE_DM_VERITY option. dm-verity is enabled by default with the
+    ...                read-only root file system, and the kernel must refuse to read data that does
+    ...                not match the root hash, so an image with modified root file system data must
+    ...                not boot.
+    [Tags]             configuration
+    [Setup]            Run Keywords
+    ...    Add Common Build Configuration
+    ...    AND    Add Common User Configuration
+
+    Build Sulka Image    ${FULL_CONFIG}
+
+    ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}
+    Open Default SSH Connection
+    ${mounts}=    Execute Command    grep " / " /proc/mounts
+    Should Start With    ${mounts}    /dev/mapper/rootfs${SPACE}
+    Should Contain    ${mounts}    ${SPACE}erofs ro,
+    Stop QEMU    ${handle}
+
+    ${image}=    Create Image With Modified Root File System
+    ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}    runqemu_args=${MACHINE} snapshot ${image}
+    ...    console_log=dm_verity_modified.log    wait_for_ssh=${False}
+    Wait Until Keyword Succeeds    5min    5s
+    ...    Console Log Should Contain    ${TEMP_DIR}/dm_verity_modified.log    Kernel panic
+    ${console}=    OperatingSystem.Get File    ${TEMP_DIR}/dm_verity_modified.log
+    Should Match Regexp    ${console}    device-mapper: verity: \\S+: data block \\d+ is corrupted
+    Stop QEMU    ${handle}
+    Remove File    ${image}
+
+    Add Sulka Configuration    SULKA_ENABLE_DM_VERITY = "0"
+
+    Build Sulka Image    ${FULL_CONFIG}
+
+    ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}
+    Open Default SSH Connection
+    ${mounts}=    Execute Command    grep " / " /proc/mounts
+    Should Not Start With    ${mounts}    /dev/mapper/
+    Should Contain    ${mounts}    ${SPACE}erofs ro,
 
     [Teardown]    Run Keywords
     ...    Reset Sulka Configuration
@@ -180,3 +224,19 @@ Tmp Mount Should Have Options
     [Arguments]    ${path}    ${options}
     ${unit}=    OperatingSystem.Get File    ${path}
     Should Contain    ${unit}    \nOptions=${options}\n    Unexpected mount options in tmp.mount
+
+Create Image With Modified Root File System
+    [Documentation]    Copy the image runqemu boots, which is the root file system image or the disk
+    ...                image that contains it, and change a byte in the first block of the C library in
+    ...                the root file system of the copy. Return the path of the copy.
+    ${deploy_dir}=    Get Bitbake Variable    DEPLOY_DIR_IMAGE    ${FULL_CONFIG}    recipe=core-image-base
+    ${link_name}=    Get Bitbake Variable    IMAGE_LINK_NAME    ${FULL_CONFIG}    recipe=core-image-base
+    ${boot_type}=    Get Bitbake Variable    QB_DEFAULT_FSTYPE    ${FULL_CONFIG}    recipe=core-image-base
+    ${image_rootfs}=    Get Bitbake Variable    IMAGE_ROOTFS    ${FULL_CONFIG}    recipe=core-image-base
+    ${libdir}=    Get Bitbake Variable    base_libdir    ${FULL_CONFIG}    recipe=core-image-base
+    ${libc}=    Set Variable    ${image_rootfs}${libdir}/libc.so.6
+    ${image}=    Normalize Path    ${CURDIR}/../${TEMP_DIR}/build/dm-verity-modified.rootfs.${boot_type}
+    ${result}=    Run Process    cp --sparse\=always "${deploy_dir}/${link_name}.${boot_type}" "${image}"    shell=True
+    Should Be Equal As Integers    ${result.rc}    0    Copying the image failed:\n${result.stderr}
+    Invert Byte In Content    ${image}    ${libc}    length=4096
+    RETURN    ${image}

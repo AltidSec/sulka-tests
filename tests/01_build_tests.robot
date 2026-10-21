@@ -68,3 +68,30 @@ Test FIRST_BOOT_RELABEL Fails
     Build Sulka Image    ${CORE_CONFIG}    expect_success=False
 
     [Teardown]    Reset Sulka Configuration
+
+Test dm-verity Requires Read-Only Root File System
+    [Documentation]    The build must fail at configuration parse time when dm-verity is enabled with
+    ...                a writable root file system.
+    [Tags]             bitbake    build
+    [Setup]            Add Common Build Configuration
+
+    Add Sulka Configuration    SULKA_ENABLE_READ_ONLY_ROOTFS = "0"
+    Add Sulka Configuration    SULKA_ENABLE_DM_VERITY = "1"
+
+    ${result}=    Build Sulka Image    ${CORE_CONFIG}    expect_success=False
+    Should Contain    ${result.stdout}${result.stderr}    SULKA_ENABLE_DM_VERITY requires a read-only rootfs
+
+    [Teardown]    Reset Sulka Configuration
+
+Test dm-verity Requires DM_VERITY_IMAGE
+    [Documentation]    The build must fail at configuration parse time when dm-verity is enabled
+    ...                without DM_VERITY_IMAGE, which only the build configuration can set.
+    [Tags]             bitbake    build
+    [Setup]            Add Common Build Configuration
+
+    Add Sulka Configuration    DM_VERITY_IMAGE = ""
+
+    ${result}=    Build Sulka Image    ${CORE_CONFIG}    expect_success=False
+    Should Contain    ${result.stdout}${result.stderr}    SULKA_ENABLE_DM_VERITY requires that you set DM_VERITY_IMAGE
+
+    [Teardown]    Reset Sulka Configuration

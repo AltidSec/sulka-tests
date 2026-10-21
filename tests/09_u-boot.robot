@@ -20,12 +20,13 @@ Suite Teardown    Reset Sulka Configuration
 ${REJECT_TIMEOUT}          3min
 ${AUTOBOOT_TIMEOUT}        3min
 # The modified images the tests create into ${MODIFIED_IMAGE_DIR}
-@{MODIFIED_IMAGES}         modified    other-key    unsigned
+@{MODIFIED_IMAGES}         modified    initramfs    other-key    unsigned
 
 *** Test Cases ***
 Test Signed FIT Image Boots
     [Documentation]    U-Boot verifies the signature of the FIT configuration and boots the kernel,
-    ...                which mounts the root file system given in the U-Boot boot arguments.
+    ...                and the initramfs in the FIT image mounts the root file system given in the
+    ...                U-Boot boot arguments with dm-verity.
     [Tags]             configuration
     ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}
     ...    runqemu_args=snapshot ${DISK_IMAGE}    console_log=verified_boot_signed.log
@@ -34,6 +35,10 @@ Test Signed FIT Image Boots
     Open Default SSH Connection
     ${cmdline}=    Execute Command    cat /proc/cmdline
     Should Contain    ${cmdline}    root=/dev/vda2
+    Close Connection
+    Open Default SSH Connection
+    ${mounts}=    Execute Command    grep " / " /proc/mounts
+    Should Start With    ${mounts}    /dev/mapper/rootfs${SPACE}
     [Teardown]    Stop QEMU    ${handle}
 
 Test Modified FIT Image Is Rejected
@@ -45,6 +50,17 @@ Test Modified FIT Image Is Rejected
     ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}    runqemu_args=${MACHINE} snapshot ${disk}
     ...    console_log=verified_boot_modified.log    wait_for_ssh=${False}
     Boot Should Be Rejected    verified_boot_modified.log    Bad hash value for 'hash-1' hash node in 'kernel-1' image node
+    [Teardown]    Stop QEMU    ${handle}
+
+Test Modified Initramfs Is Rejected
+    [Documentation]    The initramfs, which holds the dm-verity root hash, is replaced with other data
+    ...                that no longer matches the hash in the signed configuration.
+    [Tags]             configuration
+    ${disk}=    Create Disk Image With Modified FIT    initramfs
+    ...    fdtput -t s "$FIT" /images/ramdisk-1 data modified
+    ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}    runqemu_args=${MACHINE} snapshot ${disk}
+    ...    console_log=verified_boot_initramfs.log    wait_for_ssh=${False}
+    Boot Should Be Rejected    verified_boot_initramfs.log    Bad hash value for 'hash-1' hash node in 'ramdisk-1' image node
     [Teardown]    Stop QEMU    ${handle}
 
 Test FIT Image Signed With Another Key Is Rejected
@@ -195,8 +211,3 @@ Enter U-Boot Password
     [Arguments]    ${handle}    ${console_log}    ${password}
     Stop U-Boot Autoboot    ${handle}    ${console_log}
     Write To Serial Console    ${handle}    ${password}\r
-
-Console Log Should Contain
-    [Arguments]    ${path}    ${expected}
-    ${console}=    OperatingSystem.Get File    ${path}
-    Should Contain    ${console}    ${expected}

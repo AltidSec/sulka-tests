@@ -48,6 +48,7 @@ Check Logs For Errors And Warnings
         ...    .*PAM unable to dlopen.*pam_lastlog.*cannot open shared object file: No such file or directory
         ...    .*PAM adding faulty module: /usr/lib/security/pam_lastlog.so
         ...    .*device-mapper: core: CONFIG_IMA_DISABLE_HTABLE is disabled. Duplicate IMA measurements will not be recorded in the IMA log.
+        ...    .*ISOFS: unsupported/invalid hardware sector size 4096
         ...    .*cacheinfo: Unable to detect cache hierarchy for CPU 0
         ...    .*pci-host-generic 4010000000.pcie: Memory resource size exceeds max for 32 bits
         ...    .*kernel: (,| OK|, OK)$

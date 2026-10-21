@@ -238,6 +238,11 @@ Write To Serial Console
     Evaluate    $handle.stdin.write($text.encode())
     Evaluate    $handle.stdin.flush()
 
+Console Log Should Contain
+    [Arguments]    ${path}    ${expected}
+    ${console}=    OperatingSystem.Get File    ${path}
+    Should Contain    ${console}    ${expected}
+
 QEMU SSH Should Accept Login
     [Documentation]    Fails unless 127.0.0.1:2222 accepts a key-based login for ${SULKA_SERVICEUSER_USERNAME}.
     Open Connection    127.0.0.1    port=2222
