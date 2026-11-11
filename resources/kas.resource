@@ -15,6 +15,7 @@ ${SULKA_SERVICEUSER_NEW_PASSWORD}    Sulka-5ecure-Distro
 ${SULKA_UBOOT_PASSWORD}              Sulka-U-Boot-Test
 ${MODSIGN_CA_PASSPHRASE}             1234
 ${GLOBAL_BUILD_CONFIG_DELIMITER}     ;;
+${BUILD_FAILURE_LOG_LINES}           50
 @{ALLOWED_BUILD_WARNINGS}
 ...    WARNING: .* do_fetch: Failed to fetch URL .*, attempting MIRRORS if available
 ...    WARNING: .* do_sbom_cve_check: .* Found unpatched CVEs
@@ -29,8 +30,12 @@ Add Sulka Configuration
     Append To File    ${cwd}/kas-sulka-configuration.yml    \ \ \ \ ${configuration}\n
 
 Reset Sulka Configuration
+    [Documentation]    Restore kas-sulka-configuration.yml in ${cwd} from git, discarding every
+    ...                Add Sulka Configuration since the last reset. Fails if git cannot restore it.
     [Arguments]    ${cwd}=${TEMP_DIR}
-    Run Process    git    checkout    kas-sulka-configuration.yml    cwd=${cwd}
+    ${result}=    Run Process    git    checkout    kas-sulka-configuration.yml    cwd=${cwd}
+    Should Be Equal As Integers    ${result.rc}    0
+    ...    Resetting kas-sulka-configuration.yml failed:\n${result.stderr}
 
 Generate Module Signing Keys
     [Documentation]    Generate the mandatory IMA/EVM/module-signing keys into ${key_dir} (repo-root
@@ -155,14 +160,21 @@ Checkout Sulka Configuration
     Run Process    kas    checkout    ${configuration}    cwd=${cwd}    timeout=2h    stdout=kas_stdout_checkout_${timestamp}.log    stderr=kas_stderr_checkout_${timestamp}.log
 
 Build Sulka Image
+    [Documentation]    Build ${configuration} with kas in ${cwd}. The kas-sulka-configuration.yml the
+    ...                build uses is logged first. When a build expected to succeed fails, the failure
+    ...                message carries the last ${BUILD_FAILURE_LOG_LINES} lines of its kas stderr log.
     [Arguments]    ${configuration}    ${cwd}=${TEMP_DIR}    ${expect_success}=True
     Log    Starting build...
     Checkout Sulka Configuration    ${configuration}    cwd=${cwd}
+    OperatingSystem.Log File    ${cwd}/kas-sulka-configuration.yml
     ${timestamp}=    Get Current Date    result_format=epoch
     ${result}=    Run Process    kas    build    ${configuration}    cwd=${cwd}    timeout=3h 30m    stdout=kas_stdout_${timestamp}.log    stderr=kas_stderr_${timestamp}.log
     Log    Return code: ${result.rc}
     IF    ${expect_success}
-        Should Be Equal As Integers    ${result.rc}    0    Build failed
+        IF    ${result.rc} != 0
+            ${tail}=    Evaluate    '\\n'.join($result.stderr.splitlines()[-${BUILD_FAILURE_LOG_LINES}:])
+            Fail    Build failed, last ${BUILD_FAILURE_LOG_LINES} lines of kas_stderr_${timestamp}.log:\n${tail}
+        END
     ELSE
         Should Not Be Equal As Integers    ${result.rc}    0    Build was expected to fail but succeeded
     END
