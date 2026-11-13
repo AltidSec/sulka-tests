@@ -17,6 +17,9 @@ ${MODSIGN_CA_PASSPHRASE}             1234
 ${GLOBAL_BUILD_CONFIG_DELIMITER}     ;;
 ${BUILD_FAILURE_LOG_LINES}           50
 ${handle}                            ${None}
+&{CVE_DATABASE_REPOSITORIES}
+...    sbom-cve-check-update-cvelist-native=https://github.com/CVEProject/cvelistV5.git
+...    sbom-cve-check-update-nvd-native=https://github.com/fkie-cad/nvd-json-data-feeds.git
 @{ALLOWED_BUILD_WARNINGS}
 ...    WARNING: .* do_fetch: Failed to fetch URL .*, attempting MIRRORS if available
 ...    WARNING: .* do_sbom_cve_check: .* Found unpatched CVEs
@@ -67,6 +70,23 @@ Generate FIT Signing Keys
     ${result}=    Run Process    printf 'Y\\n' | '${script}' '${key_dir}' sulka-fit    shell=True
     Should Be Equal As Integers    ${result.rc}    0    FIT signing key generation failed:\n${result.stdout}\n${result.stderr}
 
+Pin CVE Database Revisions
+    [Documentation]    Resolve the current head of the main branch of each CVE database in
+    ...                ${CVE_DATABASE_REPOSITORIES}, and keep it as ${CVE_DATABASE_REVISIONS} for the
+    ...                rest of the test run. Add Common Build Configuration pins the databases to these
+    ...                revisions instead of the AUTOREV the distro sets, so that every build of the run
+    ...                checks against the same databases and fetches them only once.
+    &{revisions}=    Create Dictionary
+    FOR    ${recipe}    ${url}    IN    &{CVE_DATABASE_REPOSITORIES}
+        ${result}=    Run Process    git    ls-remote    --exit-code    ${url}    refs/heads/main    timeout=5m
+        Should Be Equal As Integers    ${result.rc}    0
+        ...    Resolving the revision of ${url} failed:\n${result.stderr}
+        ${revision}=    Fetch From Left    ${result.stdout}    \t
+        Should Match Regexp    ${revision}    ^[0-9a-f]{40}$
+        ${revisions}[${recipe}]=    Set Variable    ${revision}
+    END
+    Set Global Variable    &{CVE_DATABASE_REVISIONS}    &{revisions}
+
 Get Global Build Configuration Entries
     [Documentation]    Return ${GLOBAL_BUILD_CONFIG} as a list of local.conf entries. Entries are
     ...                separated by ${GLOBAL_BUILD_CONFIG_DELIMITER}
@@ -100,6 +120,8 @@ Add Common Build Configuration
     ...                pointing at the keys created by Generate Module Signing Keys, the U-Boot
     ...                password ${SULKA_UBOOT_PASSWORD}, and when
     ...                ${VERIFIED_BOOT} is "1", the FIT signing keys of verified boot.
+    ...                The CVE databases are pinned to the revisions that Pin CVE Database Revisions
+    ...                resolved at the start of the test run, if it has run.
     ...                ${GLOBAL_BUILD_CONFIG} entries are separated by ${GLOBAL_BUILD_CONFIG_DELIMITER};
     ...                see Get Global Build Configuration Entries.
     [Arguments]    ${cwd}=${TEMP_DIR}
@@ -130,6 +152,11 @@ Add Common Build Configuration
         Generate FIT Signing Keys    cwd=${cwd}
         Add Sulka Configuration    UBOOT_SIGN_KEYDIR = "${CURDIR}/../fit-keys"    cwd=${cwd}
         Add Sulka Configuration    UBOOT_SIGN_KEYNAME = "sulka-fit"    cwd=${cwd}
+    END
+
+    ${cve_database_revisions}=    Get Variable Value    ${CVE_DATABASE_REVISIONS}    ${{ {} }}
+    FOR    ${recipe}    ${revision}    IN    &{cve_database_revisions}
+        Add Sulka Configuration    SRCREV:pn-${recipe}:forcevariable = "${revision}"    cwd=${cwd}
     END
 
     @{config_items}=    Get Global Build Configuration Entries

@@ -6,3 +6,4 @@ Suite Setup      Run Keywords
 ...                  Clone Repository If Needed    ${KAS_SULKA_BRANCH}    https://codeberg.org/AltidSec/kas-sulka.git
 ...                  AND    Checkout Sulka Configuration    ${FULL_CONFIG}
 ...                  AND    Generate Module Signing Keys
+...                  AND    Pin CVE Database Revisions
