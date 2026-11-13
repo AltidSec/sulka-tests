@@ -16,6 +16,7 @@ ${SULKA_UBOOT_PASSWORD}              Sulka-U-Boot-Test
 ${MODSIGN_CA_PASSPHRASE}             1234
 ${GLOBAL_BUILD_CONFIG_DELIMITER}     ;;
 ${BUILD_FAILURE_LOG_LINES}           50
+${handle}                            ${None}
 @{ALLOWED_BUILD_WARNINGS}
 ...    WARNING: .* do_fetch: Failed to fetch URL .*, attempting MIRRORS if available
 ...    WARNING: .* do_sbom_cve_check: .* Found unpatched CVEs
@@ -239,7 +240,12 @@ Launch Image With QEMU
     END
     ${handle}=    Start Process    kas    shell    ${configuration}    -c    runqemu nographic slirp qemuparams\=\"-m 1024\" ${runqemu_args}    cwd=${TEMP_DIR}    stdin=PIPE    stdout=${console_log}    stderr=kas_stderr_${timestamp}.log
     IF    ${wait_for_ssh}
-        Wait Until Keyword Succeeds    ${ssh_ready_timeout}    5s    QEMU SSH Should Accept Login
+        ${ssh_ready}=    Run Keyword And Return Status
+        ...    Wait Until Keyword Succeeds    ${ssh_ready_timeout}    5s    QEMU SSH Should Accept Login
+        IF    not ${ssh_ready}
+            Stop QEMU    ${handle}
+            Fail    QEMU SSH did not accept a login within ${ssh_ready_timeout}
+        END
     END
     RETURN    ${handle}
 
@@ -263,6 +269,10 @@ QEMU SSH Should Accept Login
     Should Be True    ${logged_in}    QEMU SSH not ready
 
 Stop QEMU
+    [Documentation]    Stop the QEMU started by Launch Image With QEMU as ${handle}. Does nothing when
+    ...                ${handle} is ${None}, which is its value in a test that has not started QEMU,
+    ...                for example when the build fails, so that test teardowns can always call this.
     [Arguments]    ${handle}
+    IF    $handle is None    RETURN
     Terminate Process    ${handle}
     Wait For Process    ${handle}    timeout=10s
