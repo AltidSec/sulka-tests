@@ -98,6 +98,8 @@ Test dm-verity
     ...    Add Common Build Configuration
     ...    AND    Add Common User Configuration
 
+    Skip If    'scarthgap' in '''${KAS_SULKA_BRANCH}'''    dm-verity is not supported on scarthgap
+
     Build Sulka Image    ${FULL_CONFIG}
 
     ${handle}=    Launch Image With QEMU    ${FULL_CONFIG}

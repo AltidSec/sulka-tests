@@ -75,6 +75,8 @@ Test dm-verity Requires Read-Only Root File System
     [Tags]             bitbake    build
     [Setup]            Add Common Build Configuration
 
+    Skip If    'scarthgap' in '''${KAS_SULKA_BRANCH}'''    dm-verity is not supported on scarthgap
+
     Add Sulka Configuration    SULKA_ENABLE_READ_ONLY_ROOTFS = "0"
     Add Sulka Configuration    SULKA_ENABLE_DM_VERITY = "1"
 
@@ -88,6 +90,8 @@ Test dm-verity Requires DM_VERITY_IMAGE
     ...                without DM_VERITY_IMAGE, which only the build configuration can set.
     [Tags]             bitbake    build
     [Setup]            Add Common Build Configuration
+
+    Skip If    'scarthgap' in '''${KAS_SULKA_BRANCH}'''    dm-verity is not supported on scarthgap
 
     Add Sulka Configuration    DM_VERITY_IMAGE = ""
 
